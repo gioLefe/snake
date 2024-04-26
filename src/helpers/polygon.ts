@@ -31,12 +31,6 @@ export function drawPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, opt
   };
   ctx.moveTo(origin.x, origin.y);
   let strokeColor = options.strokeColor
-  if (polygon.colliding) {
-    strokeColor = options.collisionStrokeColor;
-  }
-  if (polygon.selected) {
-    strokeColor = options.selectedStrokeColor
-  }
   ctx.strokeStyle = strokeColor
   ctx.lineWidth = 1;
 
@@ -107,10 +101,10 @@ export function createPolygon(
   edgeLength: number,
   color: string = "#ffb3ba",
   defaults: Partial<Polygon> = {}
-): Polygon | null {
+): Polygon | undefined {
   if (numSides < 3) {
     console.warn("Polygon can't have only 2 sides. Minimum is 3");
-    return null;
+    return undefined;
   }
   return {
     color,
@@ -118,8 +112,6 @@ export function createPolygon(
     outline: true,
     points: generatePolygonPoints(numSides, edgeLength),
     position: defaults.position ?? { x: 0, y: 0 },
-    speed: defaults.speed ?? { x: 0, y: 0 },
-    maxSpeed: defaults.maxSpeed ?? { x: 5, y: 5 },
   } as Polygon;
 }
 

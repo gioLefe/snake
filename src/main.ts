@@ -1,3 +1,3 @@
+import './snake/snake-game';
 import "./style.css";
-import './use-case/sat-collisions';
 
