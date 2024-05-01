@@ -3,9 +3,9 @@ import { Polygon } from "../models/polygon";
 import { Vec2 } from "../models/vec";
 
 export interface RenderingPolygonParams {
-  strokeColor: string;
-  selectedStrokeColor: string;
-  collisionStrokeColor: string;
+  strokeColor?: string;
+  selectedStrokeColor?: string;
+  collisionStrokeColor?: string;
 }
 
 const DEFAULT_POLYGON_PARAMS: RenderingPolygonParams = {
@@ -30,8 +30,7 @@ export function drawPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, opt
     y: polygon.position.y + +polygon.points[0].y,
   };
   ctx.moveTo(origin.x, origin.y);
-  let strokeColor = options.strokeColor
-  ctx.strokeStyle = strokeColor
+  ctx.strokeStyle = options.strokeColor ?? DEFAULT_POLYGON_PARAMS.strokeColor!
   ctx.lineWidth = 1;
 
   if (polygon.color) {
@@ -72,6 +71,7 @@ export function createTriangle(height: number, color: string = "#ffb3ba"): Polyg
       x: 0,
       y: 0,
     },
+    sideLength: 2 * height / Math.sqrt(3)
   } as Polygon;
 }
 
@@ -93,26 +93,36 @@ export function createSquare(sideLength: number, color: string = "#ffb3ba"): Pol
       x: 0,
       y: 0,
     },
+    sideLength
   } as Polygon;
 }
 
 export function createPolygon(
-  numSides: number,
-  edgeLength: number,
-  color: string = "#ffb3ba",
   defaults: Partial<Polygon> = {}
-): Polygon | undefined {
-  if (numSides < 3) {
-    console.warn("Polygon can't have only 2 sides. Minimum is 3");
-    return undefined;
-  }
+): Polygon {
   return {
-    color,
+    color: defaults.color ?? "#ffb3ba",
     fill: true,
     outline: true,
-    points: generatePolygonPoints(numSides, edgeLength),
+    numSides: defaults.numSides ?? 3,
+    points: generatePolygonPoints(defaults.numSides ?? 3, defaults.sideLength ?? 10),
     position: defaults.position ?? { x: 0, y: 0 },
+    sideLength: defaults.sideLength ?? 10
   } as Polygon;
+}
+
+export function updatePolygonShape(polygon: Polygon) {
+  return {
+    ...polygon,
+    points: generatePolygonPoints(polygon.numSides, polygon.sideLength),
+  } as Polygon
+}
+
+export function rotatePolygon(polygon: Polygon, radiants: number) {
+  return {
+    ...polygon,
+    points: generatePolygonPoints(polygon.numSides, polygon.sideLength, radiants)
+  }
 }
 
 export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<number>[] {
@@ -150,13 +160,19 @@ export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<numbe
 
 function generatePolygonPoints(
   numSides: number,
-  sideLength: number
+  sideLength: number,
+  radiants?: number
 ): Vec2<number>[] {
   const points: Vec2<number>[] = [];
-  const angleIncrement = (2 * Math.PI) / numSides;
+  let fullCircle = 2 * Math.PI;
+  const angleIncrement = fullCircle / numSides;
 
   for (let i = 0; i < numSides; i++) {
-    const angle = i * angleIncrement;
+    let angle = i * angleIncrement;
+    if (radiants) {
+      angle = angle + radiants
+    }
+
     const x = sideLength * Math.cos(angle);
     const y = sideLength * Math.sin(angle);
     points.push({ x, y });

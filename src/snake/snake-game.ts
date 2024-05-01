@@ -33,10 +33,16 @@ class SnakeGame extends Game {
         this.ctx!.fillStyle = canvasBgColor;
         this.ctx!.fillRect(0, 0, this.canvas!.width, this.canvas!.height)
 
+
+        // TODO: Render all snakes
         // Player snake
         snake?.render(this.ctx!);
+
+        // TODO: Render food
+
+        // TODO: Reender Powerups
     }
 }
 
-const game_collisions = new SnakeGame(canvas, 570, 400, 30);
+const game_collisions = new SnakeGame(canvas, 570, 400, 60);
 game_collisions.start(); 

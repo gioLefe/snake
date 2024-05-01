@@ -1,22 +1,24 @@
 import { Snake } from "./models";
 
 export function registerKeyboardEvents(snake: Snake): void {
-    window.addEventListener('keypress', (ev) => {
+    window.addEventListener('keydown', (ev) => {
         switch (ev.key) {
             case 'a':
-                snake.updateDirection(snake.direction - 0.25)
+                snake.steer(- 0.25) // TODO: send SteerDirection
                 break;
             case 'd':
-                snake.updateDirection(snake.direction + 0.25)
+                snake.steer(+ 0.25) // TODO: send SteerDirection
+                break;
+            case ' ':
+                snake.setTurbo(true);
                 break;
         }
     })
-    // window.addEventListener('keyup', (ev) => {
-    //     switch (ev.key) {
-    //         case 'a':
-    //             break;
-    //         case 'd':
-    //             break;
-    //     }
-    // })
+    window.addEventListener('keyup', (ev) => {
+        switch (ev.key) {
+            case ' ':
+                snake.setTurbo(false);
+                break;
+        }
+    })
 }
