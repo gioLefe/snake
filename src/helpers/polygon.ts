@@ -102,8 +102,8 @@ export function createPolygon(
 ): Polygon {
   return {
     color: defaults.color ?? "#ffb3ba",
-    fill: true,
-    outline: true,
+    fill: defaults.fill ?? true,
+    outline: defaults.outline ?? true,
     numSides: defaults.numSides ?? 3,
     points: generatePolygonPoints(defaults.numSides ?? 3, defaults.sideLength ?? 10),
     position: defaults.position ?? { x: 0, y: 0 },

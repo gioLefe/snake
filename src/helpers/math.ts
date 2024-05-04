@@ -54,3 +54,17 @@ export function intervalsOverlap(interval1: MinMax, interval2: MinMax): boolean 
 export function toPrecisionNumber(num: number, precision: number): number {
     return parseFloat(num.toPrecision(precision));
 }
+
+export function diffVectors(vec1: Vec2<number>, vec2: Vec2<number>): number {
+    // Use Pitagora theorem to calculate the vectors
+    const vec1Length = Math.sqrt(Math.pow(vec1.x, 2) + Math.pow(vec1.y, 2));
+    const vec2Length = Math.sqrt(Math.pow(vec2.x, 2) + Math.pow(vec2.y, 2));
+    return vec1Length - vec2Length
+}
+
+export function createVector(direction: number, distance: number, origin?: Vec2<number>): Vec2<number> {
+    return {
+        x: Math.cos(direction) * distance + (origin?.x ?? 0),
+        y: Math.sin(direction) * distance + (origin?.y ?? 0)
+    }
+}

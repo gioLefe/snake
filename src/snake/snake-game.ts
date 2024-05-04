@@ -12,19 +12,19 @@ import { registerKeyboardEvents } from "./snake-inputs";
 const canvasBgColor = "#afd7db"
 const canvas = document.querySelector("canvas");
 
-let snake: Snake | undefined = undefined;
+let playerSnake: Snake | undefined = undefined;
 
 class SnakeGame extends Game {
     init(): void {
         super.init();
-        snake = initSnake({ position: { x: this.canvas!.width / 2, y: this.canvas!.height / 2 } });
-        registerKeyboardEvents(snake);
+        playerSnake = initSnake({ position: { x: this.canvas!.width / 2, y: this.canvas!.height / 2 } });
+        registerKeyboardEvents(playerSnake);
     }
 
     //
     update(deltaTime: number): void {
         super.update(deltaTime);
-        snake?.update(deltaTime);
+        playerSnake?.update(deltaTime);
     }
 
     render(): void {
@@ -36,7 +36,7 @@ class SnakeGame extends Game {
 
         // TODO: Render all snakes
         // Player snake
-        snake?.render(this.ctx!);
+        playerSnake?.render(this.ctx!);
 
         // TODO: Render food
 
@@ -44,5 +44,5 @@ class SnakeGame extends Game {
     }
 }
 
-const game_collisions = new SnakeGame(canvas, 570, 400, 60);
+const game_collisions = new SnakeGame(canvas, 1024, 768, 60);
 game_collisions.start(); 
