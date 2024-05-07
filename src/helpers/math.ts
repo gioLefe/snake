@@ -68,3 +68,34 @@ export function createVector(direction: number, distance: number, origin?: Vec2<
         y: Math.sin(direction) * distance + (origin?.y ?? 0)
     }
 }
+
+export function dotProduct(v1: Vec2<number>, v2: Vec2<number>): number {
+    return v1.x * v2.x + v1.y * v2.y;
+}
+
+export function magnitude(v: Vec2<number>): number {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+}
+
+export function angleBetween(v1: Vec2<number>, v2: Vec2<number>, tolerance: number = 1e-6): number {
+    const dot = dotProduct(v1, v2);
+    const magProduct = magnitude(v1) * magnitude(v2);
+    if (magProduct === 0) return 0; // To handle division by zero
+
+    const cosTheta = dot / magProduct;
+    const cosThetaClamped = Math.min(1, Math.max(-1, cosTheta)); // Ensure cosTheta is within [-1, 1]
+
+    const theta = Math.acos(cosThetaClamped);
+
+    // Calculate the cross product to determine the sign of the angle
+    const crossProduct = v1.x * v2.y - v1.y * v2.x;
+    const angle = crossProduct >= 0 ? theta : -theta;
+
+    // If the absolute difference between the angle and zero is within the tolerance, consider it as zero
+    if (Math.abs(angle) <= tolerance) {
+        return 0;
+    }
+
+    return angle;
+}
+

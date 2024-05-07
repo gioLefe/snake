@@ -7,7 +7,7 @@
 import { Game } from "@octo/models";
 import { Snake } from "./models";
 import { initSnake } from "./snake-init";
-import { registerKeyboardEvents } from "./snake-inputs";
+import { registerKeyboardEvents, registerMouseEvents } from "./snake-inputs";
 
 const canvasBgColor = "#afd7db"
 const canvas = document.querySelector("canvas");
@@ -19,6 +19,7 @@ class SnakeGame extends Game {
         super.init();
         playerSnake = initSnake({ position: { x: this.canvas!.width / 2, y: this.canvas!.height / 2 } });
         registerKeyboardEvents(playerSnake);
+        registerMouseEvents(playerSnake)
     }
 
     //

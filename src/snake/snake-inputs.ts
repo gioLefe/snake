@@ -22,3 +22,9 @@ export function registerKeyboardEvents(snake: Snake): void {
         }
     })
 }
+
+export function registerMouseEvents(snake: Snake) {
+    window.addEventListener('mousemove', (ev: MouseEvent) => {
+        snake.steerTo({ x: ev.x, y: ev.y });
+    })
+}

@@ -14,7 +14,7 @@ const DEFAULT_POLYGON_PARAMS: RenderingPolygonParams = {
   collisionStrokeColor: "#00a4FF"
 }
 
-export function drawPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, options: RenderingPolygonParams = DEFAULT_POLYGON_PARAMS): void {
+export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, options: RenderingPolygonParams = DEFAULT_POLYGON_PARAMS): void {
   if (!polygon) {
     console.error("Polygon is null");
     return;
