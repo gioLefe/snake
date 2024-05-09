@@ -1,6 +1,6 @@
 import { createPolygon, createVector, diffVectors, rotatePolygon } from "@octo/helpers";
-import { Polygon, Vec2 } from "@octo/models";
-import { Pivot } from "snake/models/snake";
+import { LinkedListNode, Polygon, Vec2 } from "@octo/models";
+import { Pivot, Snake } from "./";
 
 export class Segment {
     polygon: Polygon = {
@@ -10,9 +10,13 @@ export class Segment {
         points: []
     };
     private direction: number = 0;
-    private pivots: Pivot[] = [];
+    private nextPivot: LinkedListNode<Pivot> | undefined;
+    private snake: Snake;
+    private isTail = false;
 
-    constructor(direction: number, polygonOptions?: Partial<Polygon>) {
+    constructor(direction: number, isTail = false, snake: Snake, polygonOptions?: Partial<Polygon>) {
+        this.snake = snake
+        this.isTail = isTail
         this.direction = direction;
         this.polygon = createPolygon({
             sideLength: polygonOptions?.sideLength,
@@ -31,7 +35,7 @@ export class Segment {
     getPosition(): Vec2<number> {
         return this.polygon.position
     }
-    setPosition(value: Vec2<number>) {
+    setPosition(value: Vec2<number>): void {
         this.polygon.position = value
     }
 
@@ -42,56 +46,59 @@ export class Segment {
         this.direction = value;
     }
 
-    getPivots(index?: number): Pivot[] {
-        return index ? [this.pivots[index]] : this.pivots;
+    IsTail(): boolean {
+        return this.isTail
     }
-    pushPivot(value: Pivot): void {
-        this.pivots.push(value);
-    }
-    popPivot(): Pivot | undefined {
-        if (this.pivots.length) {
-            const pivot = this.pivots[0];
-            this.pivots = this.pivots.slice(1, this.pivots.length);
-            return pivot
-        }
-        return undefined
+    setTail(value: boolean): void {
+        this.isTail = value;
     }
 
-    steer(radiants: number) {
-        this.direction = (this.direction + radiants) % (Math.PI * 2);
-        // TODO: Rotate the polygon
+    popPivot(): Pivot | undefined {
+        return this.snake.popPivot()
     }
-    rotate(radiants: number) {
+    setNextPivot(pivot: LinkedListNode<Pivot> | undefined) {
+        this.nextPivot = pivot
+    }
+    getNextPivot(): LinkedListNode<Pivot> | undefined {
+        return this.nextPivot
+    }
+
+    steer(radiants: number): void {
+        this.direction = (this.direction + radiants) % (Math.PI * 2);
+    }
+    rotate(radiants: number): void {
         this.polygon = rotatePolygon(this.polygon, radiants)
     }
 
-    private moveToNextPosition(distance: number) {
-        while (distance > 0) {
-            const pivot = this.getPivots()[0];
-            if (pivot === undefined) { break; }
-
+    private moveToNextPosition(distance: number): void {
+        while (distance > 0 && this.nextPivot !== undefined) {
             let currDirection = this.getDirection();
             let currPosition = this.getPosition();
-            const pivotPosition = pivot.position;
 
+            // Calculate if distance to cover is more or less the distance to next pivot
+            const pivotPosition = this.nextPivot.data.position;
             const distanceToPivotVec: Vec2<number> = {
                 x: currPosition.x - pivotPosition.x,
                 y: currPosition.y - pivotPosition.y,
             }
-
             const distanceProjection = createVector(currDirection, distance);
-
-            // Calculate difference between vectors and react to it. If fullDistanceProjection is longer than distance to pivot, move to pivot
             const difference = diffVectors(distanceProjection, distanceToPivotVec);
+
+            // If difference is longer than distance to pivot, move to pivot and set next pivot
             if (difference > 0) {
-                this.setDirection(pivot.direction);
-                this.rotate(pivot.direction);
+                this.setDirection(this.nextPivot.data.direction);
+                this.rotate(this.nextPivot.data.direction);
                 this.setPosition({
                     x: pivotPosition.x,
                     y: pivotPosition.y
                 })
                 distance = Math.abs(difference);
-                this.popPivot()
+                this.setNextPivot(this.nextPivot.next ?? undefined)
+
+                // Tail segment is responsible to pop elements from the pivots list in the snake
+                if (this.IsTail()) {
+                    this.popPivot();
+                }
             } else {
                 this.setPosition({
                     x: this.getPosition().x + distanceProjection.x,
@@ -100,7 +107,7 @@ export class Segment {
                 distance = 0
             }
         }
-        if (this.getPivots().length === 0 && distance > 0) {
+        if (this.getNextPivot() === undefined && distance > 0) {
             let nextPositionVec = createVector(this.getDirection(), distance);
             this.setPosition({
                 x: this.getPosition().x + nextPositionVec.x,

@@ -118,7 +118,7 @@ export function updatePolygonShape(polygon: Polygon) {
   } as Polygon
 }
 
-export function rotatePolygon(polygon: Polygon, radiants: number) {
+export function rotatePolygon(polygon: Polygon, radiants: number): Polygon {
   return {
     ...polygon,
     points: generatePolygonPoints(polygon.numSides, polygon.sideLength, radiants)

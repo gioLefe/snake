@@ -1,5 +1,5 @@
 import { angleBetween, createVector, renderPolygon, toPrecisionNumber } from "@octo/helpers";
-import { GameObject, Vec2 } from "@octo/models";
+import { GameObject, LinkedList, Vec2 } from "@octo/models";
 import { Segment } from "./segment";
 
 export type SnakeInitParam = Partial<Snake> & {
@@ -13,17 +13,23 @@ export type Pivot = {
     direction: number
 }
 
+function pivotComparator(p1: Pivot, p2: Pivot) {
+    return p1.position.x === p2.position.x && p1.position.y === p2.position.y && p1.direction === p2.direction
+}
+
 export type SteerDirection = {
     'Left': 1,
     'Right': 2
 }
 
 const DEBUG = false;
+const DEFAULT_POLYGON_SIZE = 15
+
 
 export class Snake implements GameObject {
     id: string;
     private readonly BIT_DISTANCE = 7;
-    private length: number = 20;
+    private length: number = 100;
     private direction: number = Math.random() % (Math.PI * 2);
     private segments: Segment[] = []
     private turboSpeed: number = 4
@@ -31,16 +37,18 @@ export class Snake implements GameObject {
     private turbonOn: boolean = false;
 
     private angleToTargetPoint: number = 0;
-    private maxSteerAngle = 0.06
+    private maxSteerAngle = 0.12
     private targetPoint: Vec2<number> | undefined = undefined;
+
+    private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
 
     constructor(id: string, options?: SnakeInitParam) {
         if (options?.initialDirection) {
             this.direction = options.initialDirection
         }
         this.id = id;
-        this.segments[0] = new Segment(this.direction, {
-            sideLength: 15,
+        this.segments[0] = new Segment(this.direction, false, this, {
+            sideLength: DEFAULT_POLYGON_SIZE,
             numSides: 10,
             color: "#86a04e",
             position: options?.position ?? { x: 0, y: 0 },
@@ -48,50 +56,21 @@ export class Snake implements GameObject {
         });
 
         for (let i = 1; i < (options?.length ?? this.length); i++) {
+            const previousBit: Segment = this.segments[i - 1]
+            const tailDirection: number = this.direction + Math.PI
+
             this.segments[i] =
-                new Segment(this.direction, {
-                    sideLength: 15,
+                new Segment(this.direction, i === this.length - 1, this, {
+                    sideLength: this.calcPolygonSize(i, this.length),
                     numSides: 10,
                     color: "#576c1a",
-                    position: this.calculateTailFromPreviousBit(this.segments[i - 1], this.direction + Math.PI),
+                    position:
+                    {
+                        x: previousBit.getPosition().x + this.getSpeed() * Math.cos(tailDirection) * this.BIT_DISTANCE,
+                        y: previousBit.getPosition().y + this.getSpeed() * Math.sin(tailDirection) * this.BIT_DISTANCE
+                    },
                     outline: true
                 });
-        }
-    }
-
-    update(deltaTime: number) {
-        const speed = this.getSpeed();
-        const head = this.segments[0];
-
-        // Check if there is a target point to steer toards to (i.e: Mouse movement)
-        if (this.angleToTargetPoint !== 0) {
-
-            let steerAngle
-            if (Math.abs(this.angleToTargetPoint) < this.maxSteerAngle) {
-                steerAngle = this.angleToTargetPoint + (this.angleToTargetPoint > 0 ? -1 : 1) * this.maxSteerAngle;
-            } else if (Math.abs(this.angleToTargetPoint - Math.PI) < this.maxSteerAngle) {
-                steerAngle = Math.abs(this.angleToTargetPoint) + (this.angleToTargetPoint > 0 ? -1 : 1) * (this.maxSteerAngle + Math.PI);
-                this.targetPoint = undefined;
-                this.angleToTargetPoint = 0;
-            } else {
-                steerAngle = this.angleToTargetPoint > 0 ? -this.maxSteerAngle : this.maxSteerAngle;
-            }
-
-            this.steer(steerAngle);
-            if (this.targetPoint) {
-                this.calcHeadTargetAngle(this.targetPoint);
-            }
-        }
-
-        const headDistanceDelta: Vec2<number> = createVector(this.direction, speed)
-
-        head.setPosition({
-            x: head.getPosition().x + headDistanceDelta.x,
-            y: head.getPosition().y + headDistanceDelta.y
-        })
-
-        for (let i = 1; i < this.length; i++) {
-            this.segments[i].update(deltaTime, speed)
         }
     }
 
@@ -105,20 +84,19 @@ export class Snake implements GameObject {
             ctx.strokeStyle = "#000";
             ctx.strokeText('Head {' + toPrecisionNumber(segmentPos.x, 7) + ' : ' + toPrecisionNumber(segmentPos.y, 7) + '}', 10, 50)
             ctx.strokeStyle = "#22F";
-            this.segments[1].getPivots().forEach((d) => {
-                ctx.beginPath();
-                ctx.strokeStyle = "#000";
-                ctx.fillStyle = "#F00";
-                ctx.arc(d.position.x, d.position.y, 8, d.direction, d.direction + Math.PI);
-                ctx.stroke();
-                ctx.fill();
-                ctx.closePath();
+            // this.segments[1].getPivots().forEach((d) => {
+            //     ctx.beginPath();
+            //     ctx.strokeStyle = "#000";
+            //     ctx.fillStyle = "#F00";
+            //     ctx.arc(d.position.x, d.position.y, 8, d.direction, d.direction + Math.PI);
+            //     ctx.stroke();
+            //     ctx.fill();
+            //     ctx.closePath();
 
-                ctx.fillText('x:' + toPrecisionNumber(d.position.x, 7) + ' y:' + toPrecisionNumber(d.position.y, 7), d.position.x - 1, d.position.y + 1)
-            })
+            //     ctx.fillText('x:' + toPrecisionNumber(d.position.x, 7) + ' y:' + toPrecisionNumber(d.position.y, 7), d.position.x - 1, d.position.y + 1)
+            // })
 
             if (this.targetPoint) {
-                // Render  line to mouse point
                 ctx.beginPath();
                 ctx.strokeStyle = "#a4a";
                 ctx.moveTo(this.getHeadPos().x, this.getHeadPos().y);
@@ -143,6 +121,39 @@ export class Snake implements GameObject {
         }
     }
 
+    update(deltaTime: number) {
+        const speed = this.getSpeed();
+        const head = this.segments[0];
+
+        // Check if there is a target point to steer towards to (i.e: Mouse movement)
+        if (this.angleToTargetPoint !== 0) {
+            let steerAngle = this.angleToTargetPoint > 0 ? -this.maxSteerAngle : this.maxSteerAngle;
+            if (Math.abs(this.angleToTargetPoint) < this.maxSteerAngle) {
+                steerAngle = this.angleToTargetPoint + (this.angleToTargetPoint > 0 ? -1 : 1) * this.maxSteerAngle;
+            } else if (Math.abs(this.angleToTargetPoint - Math.PI) < this.maxSteerAngle) {
+                steerAngle = Math.abs(this.angleToTargetPoint) + (this.angleToTargetPoint > 0 ? -1 : 1) * (this.maxSteerAngle + Math.PI);
+                this.targetPoint = undefined;
+                this.angleToTargetPoint = 0;
+            }
+
+            this.steer(steerAngle);
+            if (this.targetPoint) {
+                this.calcHeadTargetAngle(this.targetPoint);
+            }
+        }
+
+        const headDistanceDelta: Vec2<number> = createVector(this.direction, speed)
+
+        head.setPosition({
+            x: head.getPosition().x + headDistanceDelta.x,
+            y: head.getPosition().y + headDistanceDelta.y
+        })
+
+        for (let i = 1; i < this.length; i++) {
+            this.segments[i].update(deltaTime, speed)
+        }
+    }
+
     steer(radiants: number) {
         // Use % PI*2 to simplify the direction number
         this.direction = (this.direction + radiants) % (Math.PI * 2);
@@ -151,9 +162,12 @@ export class Snake implements GameObject {
 
         const sPos = this.segments[0].getPosition()
         const pivot: Pivot = { position: { x: sPos.x, y: sPos.y }, direction: this.direction };
-        this.segments.forEach((s) => {
-            s.pushPivot(pivot);
-        })
+        const nodePivot = this.pivots.append(pivot);
+        for (let i = 1; i < this.length; i++) {
+            if (this.segments[i].getNextPivot() === undefined) {
+                this.segments[i].setNextPivot(nodePivot)
+            }
+        }
     }
 
     steerTo(point: Vec2<number>): void {
@@ -176,11 +190,21 @@ export class Snake implements GameObject {
         return this.turbonOn ? this.turboSpeed : this.speed
     }
 
-    private calculateTailFromPreviousBit(previousBit: Segment, tailDirection: number): Vec2<number> {
-        return {
-            x: previousBit.getPosition().x + this.getSpeed() * Math.cos(tailDirection) * this.BIT_DISTANCE,
-            y: previousBit.getPosition().y + this.getSpeed() * Math.sin(tailDirection) * this.BIT_DISTANCE
+    getPivots(): Pivot[] {
+        return this.pivots.traverse();
+    }
+    pushPivot(value: Pivot): void {
+        this.pivots.append(value);
+    }
+    popPivot(): Pivot | undefined {
+        if (this.pivots.size()) {
+            const pivot = this.pivots.head;
+            if (pivot !== null) {
+                this.pivots.delete(pivot.data);
+            }
+            return pivot?.data
         }
+        return undefined
     }
 
     private calcHeadTargetAngle(point: Vec2<number>) {
@@ -191,7 +215,25 @@ export class Snake implements GameObject {
         this.angleToTargetPoint = angleBetween(currVector, mouseVector, 0.001);
     }
 
-    private printPositionLog(position: Vec2<number>): string {
-        return `x:${position.x} - y:${position.y}`
+    private calcPolygonSize(index: number, length: number) {
+        switch (index) {
+            case 1:
+                return DEFAULT_POLYGON_SIZE - 1
+            case 2:
+                return DEFAULT_POLYGON_SIZE - 2
+            case 3:
+                return DEFAULT_POLYGON_SIZE - 1
+            case length - 5:
+            case length - 4:
+            case length - 3:
+                return DEFAULT_POLYGON_SIZE - 1
+            case length - 2:
+                return DEFAULT_POLYGON_SIZE - 3
+            case length - 1:
+                return DEFAULT_POLYGON_SIZE - 5
+
+            default: return DEFAULT_POLYGON_SIZE;
+
+        }
     }
 }
