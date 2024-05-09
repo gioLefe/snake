@@ -1,14 +1,10 @@
+import { PickupItem } from "./";
 
-export interface Pickup {
-    id: string,
-}
-
-export class Food implements Pickup {
-    id: string = '';
-    value = 1;
-    radius = 2;
-
+export class Food extends PickupItem {
     constructor(id: string) {
-        this.id = id
+        super();
+        this.id = id;
     }
+    id: string;
+    value = 1;
 }

@@ -1,20 +1,13 @@
 import { angleBetween, createVector, renderPolygon, toPrecisionNumber } from "@octo/helpers";
-import { GameObject, LinkedList, Vec2 } from "@octo/models";
+import { GameObject, GraphicContext, LinkedList, Vec2 } from "@octo/models";
+import { DEFAULT_POLYGON_SIZE } from "snake/constants";
+import { Pivot, pivotComparator } from "../../models/pivot";
 import { Segment } from "./segment";
 
 export type SnakeInitParam = Partial<Snake> & {
-    position: Vec2<number>,
+    position?: Vec2<number>,
     initialDirection?: number,
     length?: number
-}
-
-export type Pivot = {
-    position: Vec2<number>,
-    direction: number
-}
-
-function pivotComparator(p1: Pivot, p2: Pivot) {
-    return p1.position.x === p2.position.x && p1.position.y === p2.position.y && p1.direction === p2.direction
 }
 
 export type SteerDirection = {
@@ -22,11 +15,9 @@ export type SteerDirection = {
     'Right': 2
 }
 
-const DEBUG = false;
-const DEFAULT_POLYGON_SIZE = 15
+const DEBUG = true;
 
-
-export class Snake implements GameObject {
+export class Snake extends GameObject<CanvasRenderingContext2D> {
     id: string;
     private readonly BIT_DISTANCE = 7;
     private length: number = 100;
@@ -42,20 +33,24 @@ export class Snake implements GameObject {
 
     private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
 
-    constructor(id: string, options?: SnakeInitParam) {
-        if (options?.initialDirection) {
-            this.direction = options.initialDirection
-        }
+    constructor(id: string) {
+        super()
         this.id = id;
+    }
+    init(ctx: CanvasRenderingContext2D, args: SnakeInitParam) {
+        this.ctx = ctx
+        if (args?.initialDirection) {
+            this.direction = args.initialDirection
+        }
         this.segments[0] = new Segment(this.direction, false, this, {
             sideLength: DEFAULT_POLYGON_SIZE,
             numSides: 10,
             color: "#86a04e",
-            position: options?.position ?? { x: 0, y: 0 },
+            position: args.position ?? { x: 0, y: 0 },
             outline: true
         });
 
-        for (let i = 1; i < (options?.length ?? this.length); i++) {
+        for (let i = 1; i < (args.length ?? this.length); i++) {
             const previousBit: Segment = this.segments[i - 1]
             const tailDirection: number = this.direction + Math.PI
 
@@ -71,57 +66,24 @@ export class Snake implements GameObject {
                     },
                     outline: true
                 });
+            this.segments[i].init(ctx)
         }
     }
+    clean(...args: any) {
+        throw new Error("Method not implemented.");
+    }
 
-    render(ctx: CanvasRenderingContext2D): void {
+    render(...args: any): void {
+        super.render(args);
         for (let i = this.segments.length - 1; i >= 0; i--) {
-            renderPolygon(this.segments[i].polygon, ctx)
+            renderPolygon(this.segments[i].polygon, this.ctx!)
         }
-        if (DEBUG) {
-            ctx.font = `20px Verdana`
-            const segmentPos = this.segments[1].getPosition();
-            ctx.strokeStyle = "#000";
-            ctx.strokeText('Head {' + toPrecisionNumber(segmentPos.x, 7) + ' : ' + toPrecisionNumber(segmentPos.y, 7) + '}', 10, 50)
-            ctx.strokeStyle = "#22F";
-            // this.segments[1].getPivots().forEach((d) => {
-            //     ctx.beginPath();
-            //     ctx.strokeStyle = "#000";
-            //     ctx.fillStyle = "#F00";
-            //     ctx.arc(d.position.x, d.position.y, 8, d.direction, d.direction + Math.PI);
-            //     ctx.stroke();
-            //     ctx.fill();
-            //     ctx.closePath();
 
-            //     ctx.fillText('x:' + toPrecisionNumber(d.position.x, 7) + ' y:' + toPrecisionNumber(d.position.y, 7), d.position.x - 1, d.position.y + 1)
-            // })
-
-            if (this.targetPoint) {
-                ctx.beginPath();
-                ctx.strokeStyle = "#a4a";
-                ctx.moveTo(this.getHeadPos().x, this.getHeadPos().y);
-                ctx.lineTo(this.targetPoint.x, this.targetPoint.y);
-                ctx.stroke();
-                ctx.closePath();
-
-                ctx.strokeStyle = "#000";
-                ctx.strokeText('Angle between Head-MousePoint and Head-Direction', 10, 70, 240);
-                ctx.fillStyle = "#F00";
-                ctx.fillText(this.angleToTargetPoint.toString(), 250, 70)
-            }
-
-            // Render direction
-            const headDistanceDelta: Vec2<number> = createVector(this.direction, this.getSpeed() + 50)
-            ctx.beginPath();
-            ctx.strokeStyle = "#a22";
-            ctx.moveTo(this.getHeadPos().x, this.getHeadPos().y);
-            ctx.lineTo(this.getHeadPos().x + headDistanceDelta.x, this.getHeadPos().y + headDistanceDelta.y);
-            ctx.stroke();
-            ctx.closePath();
-        }
+        if (DEBUG) { this.renderDebug(this.ctx!) }
     }
 
-    update(deltaTime: number) {
+    update(deltaTime: number, ...args: any) {
+        super.update(deltaTime, args)
         const speed = this.getSpeed();
         const head = this.segments[0];
 
@@ -190,12 +152,6 @@ export class Snake implements GameObject {
         return this.turbonOn ? this.turboSpeed : this.speed
     }
 
-    getPivots(): Pivot[] {
-        return this.pivots.traverse();
-    }
-    pushPivot(value: Pivot): void {
-        this.pivots.append(value);
-    }
     popPivot(): Pivot | undefined {
         if (this.pivots.size()) {
             const pivot = this.pivots.head;
@@ -235,5 +191,48 @@ export class Snake implements GameObject {
             default: return DEFAULT_POLYGON_SIZE;
 
         }
+    }
+
+    private renderDebug(ctx: CanvasRenderingContext2D) {
+        ctx.font = `20px Verdana`
+        const segmentPos = this.segments[1].getPosition();
+        ctx.strokeStyle = "#000";
+        ctx.strokeText('Head {' + toPrecisionNumber(segmentPos.x, 7) + ' : ' + toPrecisionNumber(segmentPos.y, 7) + '}', 10, 50)
+        ctx.strokeStyle = "#22F";
+        // this.segments[1].getPivots().forEach((d) => {
+        //     ctx.beginPath();
+        //     ctx.strokeStyle = "#000";
+        //     ctx.fillStyle = "#F00";
+        //     ctx.arc(d.position.x, d.position.y, 8, d.direction, d.direction + Math.PI);
+        //     ctx.stroke();
+        //     ctx.fill();
+        //     ctx.closePath();
+
+        //     ctx.fillText('x:' + toPrecisionNumber(d.position.x, 7) + ' y:' + toPrecisionNumber(d.position.y, 7), d.position.x - 1, d.position.y + 1)
+        // })
+
+        if (this.targetPoint) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#a4a";
+            ctx.moveTo(this.getHeadPos().x, this.getHeadPos().y);
+            ctx.lineTo(this.targetPoint.x, this.targetPoint.y);
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.strokeStyle = "#000";
+            ctx.strokeText('Angle between Head-MousePoint and Head-Direction', 10, 70, 240);
+            ctx.fillStyle = "#F00";
+            ctx.fillText(this.angleToTargetPoint.toString(), 250, 70)
+        }
+
+        // Render direction
+        const headDistanceDelta: Vec2<number> = createVector(this.direction, this.getSpeed() + 50)
+        ctx.beginPath();
+        ctx.strokeStyle = "#a22";
+        ctx.moveTo(this.getHeadPos().x, this.getHeadPos().y);
+        ctx.lineTo(this.getHeadPos().x + headDistanceDelta.x, this.getHeadPos().y + headDistanceDelta.y);
+        ctx.stroke();
+        ctx.closePath();
+
     }
 }

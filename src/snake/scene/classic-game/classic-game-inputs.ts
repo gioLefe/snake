@@ -1,4 +1,4 @@
-import { Snake } from "./models";
+import { Snake } from "../../models";
 
 export function registerKeyboardEvents(snake: Snake): void {
     window.addEventListener('keydown', (ev) => {

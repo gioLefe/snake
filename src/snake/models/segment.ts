@@ -1,8 +1,8 @@
-import { createPolygon, createVector, diffVectors, rotatePolygon } from "@octo/helpers";
-import { LinkedListNode, Polygon, Vec2 } from "@octo/models";
-import { Pivot, Snake } from "./";
+import { createPolygon, createVector, diffVectors, renderPolygon, rotatePolygon } from "@octo/helpers";
+import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
+import { Snake } from "./";
 
-export class Segment {
+export class Segment extends GameObject<CanvasRenderingContext2D> {
     polygon: Polygon = {
         sideLength: 0,
         position: { x: 0, y: 0 },
@@ -15,6 +15,7 @@ export class Segment {
     private isTail = false;
 
     constructor(direction: number, isTail = false, snake: Snake, polygonOptions?: Partial<Polygon>) {
+        super();
         this.snake = snake
         this.isTail = isTail
         this.direction = direction;
@@ -27,8 +28,19 @@ export class Segment {
         })
         this.rotate(this.direction)
     }
+    init(ctx: CanvasRenderingContext2D, ...args: any) {
+        super.init(ctx, args)
+    }
+    render(...args: any): void {
+        super.render(args);
+        renderPolygon(this.polygon, this.ctx!);
+    }
+    clean(...args: any) {
+        super.clean(args)
+    }
 
     update(deltaTime: number, distance: number): void {
+        super.update(deltaTime)
         this.moveToNextPosition(distance);
     }
 

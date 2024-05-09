@@ -1,49 +1,33 @@
-/**
- * USE CASE: 
- * Game engine that draws polygons that move following a TBD behavior
- * and collisions between polygons is determined using the SAT(Separated Axis Theorem)
- */
-
 import { Game } from "@octo/models";
-import { Snake } from "./models";
-import { initSnake } from "./snake-init";
-import { registerKeyboardEvents, registerMouseEvents } from "./snake-inputs";
+import { ClassicGameScene } from "snake/scene/classic-game/classic-game";
 
-const canvasBgColor = "#afd7db"
 const canvas = document.querySelector("canvas");
 
-let playerSnake: Snake | undefined = undefined;
-
-class SnakeGame extends Game {
+export class SnakeGame extends Game {
     init(): void {
-        super.init();
-        playerSnake = initSnake({ position: { x: this.canvas!.width / 2, y: this.canvas!.height / 2 } });
-        registerKeyboardEvents(playerSnake);
-        registerMouseEvents(playerSnake)
+        debugger;
+        if (canvas === undefined || canvas === null) {
+            throw Error('canvas is undefined')
+        }
+        if (this.ctx === undefined || this.ctx === null) {
+            throw Error('ctx is undefined')
+        }
+        super.init(this.ctx);
+
+        // This is a test, it should load the main menu
+        const game = new ClassicGameScene(this.ctx, canvas, { x: canvas.width / 2, y: canvas.height / 2 });
+        this.sceneManager?.changeScene(game, false);
     }
 
     //
     update(deltaTime: number): void {
         super.update(deltaTime);
-        playerSnake?.update(deltaTime);
     }
 
     render(): void {
-        super.render();
-        // Apply background color
-        this.ctx!.fillStyle = canvasBgColor;
-        this.ctx!.fillRect(0, 0, this.canvas!.width, this.canvas!.height)
-
-
-        // TODO: Render all snakes
-        // Player snake
-        playerSnake?.render(this.ctx!);
-
-        // TODO: Render food
-
-        // TODO: Reender Powerups
+        super.render()
     }
 }
 
-const game_collisions = new SnakeGame(canvas, 1024, 768, 60);
-game_collisions.start(); 
+const SNAKE_GAME = new SnakeGame(canvas, 1024, 768, 60);
+SNAKE_GAME.start(); 

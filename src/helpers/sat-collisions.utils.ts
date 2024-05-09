@@ -2,6 +2,9 @@ import { Polygon } from "@octo/models";
 import { intervalsOverlap, projectPolygonToAxis } from "./";
 
 export function checkSATCollision(polygonA: Polygon, polygonB: Polygon): boolean {
+    if (polygonA.normals === undefined) {
+        return false
+    }
     for (let z = 0; z < polygonA.normals.length; z++) {
         // Transform polygons points to space coordinates
         const polAVertices = polygonA.points.map((point) => ({ x: point.x + polygonA.position.x, y: point.y + polygonA.position.y }))

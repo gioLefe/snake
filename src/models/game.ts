@@ -1,13 +1,19 @@
+import { GameCycle } from "@octo/models";
+import { SceneManager } from "helpers/scene-manager";
 
-export abstract class Game {
-    canvasWidth: number = 0;
-    canvasHeight: number = 0;
-    canvas: HTMLCanvasElement | undefined;
-    ctx: CanvasRenderingContext2D | null | undefined;
-    lastUpdateTime: number = 0;
-    deltaTime: number = 0;
-    frameInterval: number = 0
-    debug: { init: boolean, update: boolean, render: boolean } = {
+export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
+    private canvasWidth: number = 0;
+    private canvasHeight: number = 0;
+    protected canvas: HTMLCanvasElement | undefined;
+    protected ctx: CanvasRenderingContext2D | null | undefined;
+
+    private lastUpdateTime: number = 0;
+    private deltaTime: number = 0;
+    private frameInterval: number = 0
+
+    protected sceneManager: SceneManager | undefined;
+
+    private debug: { init: boolean, update: boolean, render: boolean } = {
         init: false,
         update: false,
         render: false
@@ -28,29 +34,37 @@ export abstract class Game {
         this.deltaTime = 0;
 
         this.frameInterval - 1000 / fps
-        this.init();
+        if (this.ctx === null) {
+            throw Error('ctx is null');
+        }
+        this.init(this.ctx);
+    }
+    clean(...args: any) {
+        throw new Error("Method not implemented.");
     }
 
-    init(): void {
-        // Initialize game objects, resources, etc.
+    init(ctx: CanvasRenderingContext2D): void {
+        this.sceneManager = new SceneManager(ctx);
+
         if (this.debug.init)
             console.log(`%c *** Init`, `background:#020; color:#adad00`)
     }
 
     update(deltaTime: number): void {
-        // Update game state based on deltaTime
         if (this.debug.update)
             console.log(`%c *** Update`, `background:#020; color:#adad00`)
+
+        this.sceneManager?.getCurrentScene()?.update(deltaTime)
     }
 
-    render(): void {
-        // Render game objects
+    render(...args: any): void {
         if (this.debug.render)
             console.log(`%c *** Render`, `background:#020; color:#adad00`)
+
+        this.sceneManager?.getCurrentScene()?.render(this.ctx);
     }
 
     gameLoop(timestamp: number): void {
-
         const elapsed = timestamp - this.lastUpdateTime;
 
         if (elapsed > this.frameInterval) {
@@ -65,7 +79,7 @@ export abstract class Game {
             this.ctx!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
 
             // Render game
-            this.render();
+            this.render(this.ctx!);
         }
 
         // Request next frame
@@ -73,13 +87,14 @@ export abstract class Game {
     }
 
     start(): void {
-        // Start the game loop
-        this.lastUpdateTime = performance.now();
-        if (this.ctx === null) {
+        if (this.ctx === undefined || this.ctx === null) {
             console.error(`%c *** Error, 2dContext is null`, `background:#222; color: #FF0a55`)
-            return;
+            throw Error('ctx is undefined');
         }
         console.log(`%c *** GAMELOOP START`, `background:#020; color:#adad00`)
+
+        // Start the game loop
+        this.lastUpdateTime = performance.now();
         this.gameLoop(this.lastUpdateTime);
     }
 }
