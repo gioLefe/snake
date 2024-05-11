@@ -5,7 +5,6 @@ const canvas = document.querySelector("canvas");
 
 export class SnakeGame extends Game {
     init(): void {
-        debugger;
         if (canvas === undefined || canvas === null) {
             throw Error('canvas is undefined')
         }

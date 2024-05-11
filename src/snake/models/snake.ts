@@ -1,5 +1,5 @@
 import { angleBetween, createVector, renderPolygon, toPrecisionNumber } from "@octo/helpers";
-import { GameObject, GraphicContext, LinkedList, Vec2 } from "@octo/models";
+import { GameObject, LinkedList, Vec2 } from "@octo/models";
 import { DEFAULT_POLYGON_SIZE } from "snake/constants";
 import { Pivot, pivotComparator } from "../../models/pivot";
 import { Segment } from "./segment";
@@ -27,8 +27,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     private speed: number = 2
     private turbonOn: boolean = false;
 
-    private angleToTargetPoint: number = 0;
-    private maxSteerAngle = 0.12
+    private maxSteerAngle = 0.1
     private targetPoint: Vec2<number> | undefined = undefined;
 
     private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
@@ -88,24 +87,17 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         const head = this.segments[0];
 
         // Check if there is a target point to steer towards to (i.e: Mouse movement)
-        if (this.angleToTargetPoint !== 0) {
-            let steerAngle = this.angleToTargetPoint > 0 ? -this.maxSteerAngle : this.maxSteerAngle;
-            if (Math.abs(this.angleToTargetPoint) < this.maxSteerAngle) {
-                steerAngle = this.angleToTargetPoint + (this.angleToTargetPoint > 0 ? -1 : 1) * this.maxSteerAngle;
-            } else if (Math.abs(this.angleToTargetPoint - Math.PI) < this.maxSteerAngle) {
-                steerAngle = Math.abs(this.angleToTargetPoint) + (this.angleToTargetPoint > 0 ? -1 : 1) * (this.maxSteerAngle + Math.PI);
+        const angleToTarget = this.calcHeadTargetAngle(this.targetPoint);
+        if (angleToTarget !== 0) {
+            let steerAngle = angleToTarget > 0 ? -this.maxSteerAngle : this.maxSteerAngle;
+            if (Math.abs(angleToTarget - Math.PI) < this.maxSteerAngle) {
+                steerAngle = Math.abs(angleToTarget - Math.PI) * (angleToTarget > 0 ? -1 : 1)
                 this.targetPoint = undefined;
-                this.angleToTargetPoint = 0;
             }
-
             this.steer(steerAngle);
-            if (this.targetPoint) {
-                this.calcHeadTargetAngle(this.targetPoint);
-            }
         }
 
         const headDistanceDelta: Vec2<number> = createVector(this.direction, speed)
-
         head.setPosition({
             x: head.getPosition().x + headDistanceDelta.x,
             y: head.getPosition().y + headDistanceDelta.y
@@ -134,7 +126,6 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
 
     steerTo(point: Vec2<number>): void {
         this.targetPoint = point
-        this.calcHeadTargetAngle(point)
     }
 
     setTurbo(turbo: boolean) {
@@ -163,12 +154,15 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         return undefined
     }
 
-    private calcHeadTargetAngle(point: Vec2<number>) {
+    private calcHeadTargetAngle(point: Vec2<number> | undefined): number {
+        if (point === undefined) {
+            return 0
+        }
         const headPos = this.getHeadPos()
         const currVector = createVector(this.getDirection(), this.getSpeed());
         const mouseVector = { x: headPos.x - point.x, y: headPos.y - point.y };
 
-        this.angleToTargetPoint = angleBetween(currVector, mouseVector, 0.001);
+        return angleBetween(currVector, mouseVector, 0.001);
     }
 
     private calcPolygonSize(index: number, length: number) {
@@ -219,10 +213,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             ctx.stroke();
             ctx.closePath();
 
-            ctx.strokeStyle = "#000";
-            ctx.strokeText('Angle between Head-MousePoint and Head-Direction', 10, 70, 240);
-            ctx.fillStyle = "#F00";
-            ctx.fillText(this.angleToTargetPoint.toString(), 250, 70)
+            // ctx.strokeStyle = "#000";
+            // ctx.strokeText('Angle between Head-MousePoint and Head-Direction', 10, 70, 240);
+            // ctx.fillStyle = "#F00";
+            // ctx.fillText(this.angleToTargetPoint.toString(), 250, 70)
         }
 
         // Render direction

@@ -27,6 +27,7 @@ export class UIButton extends GameObject<CanvasRenderingContext2D> {
         }
         this.ctx.measureText
         this.ctx.beginPath()
+        this.ctx.closePath()
     }
     clean(...args: any) {
         super.clean(args);
