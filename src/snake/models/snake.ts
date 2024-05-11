@@ -89,7 +89,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         // Check if there is a target point to steer towards to (i.e: Mouse movement)
         const angleToTarget = this.calcHeadTargetAngle(this.targetPoint);
         if (angleToTarget !== 0) {
-            let steerAngle = angleToTarget > 0 ? -this.maxSteerAngle : this.maxSteerAngle;
+            let steerAngle = this.maxSteerAngle * (angleToTarget > 0 ? -1 : 1);
             if (Math.abs(angleToTarget - Math.PI) < this.maxSteerAngle) {
                 steerAngle = Math.abs(angleToTarget - Math.PI) * (angleToTarget > 0 ? -1 : 1)
                 this.targetPoint = undefined;
