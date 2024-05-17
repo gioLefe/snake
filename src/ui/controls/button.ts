@@ -4,11 +4,15 @@ export class UIButton extends GameObject<CanvasRenderingContext2D> {
     id: string | undefined;
     text: string | undefined;
     size: TextMetrics | undefined
+    position: Vec2<number> | undefined;
+    textStyle: CanvasTextDrawingStyles | undefined;
 
-    constructor(id: string, text?: string) {
+    constructor(id: string, x: number, y: number, textStyle: CanvasTextDrawingStyles, text?: string) {
         super()
         this.id = id;
         this.text = text;
+        this.position = { x, y }
+        this.textStyle = textStyle
     }
 
     init(ctx: CanvasRenderingContext2D, ...args: any) {
@@ -23,10 +27,15 @@ export class UIButton extends GameObject<CanvasRenderingContext2D> {
     render(...args: any) {
         super.render(args)
         if (this.ctx === undefined) {
-            throw Error('ctx is not defined')
+            throw Error('ctx is not defined');
         }
-        this.ctx.measureText
+        if (this.position === undefined) {
+            return;
+        }
+
         this.ctx.beginPath()
+        this.ctx.moveTo(this.position?.x, this.position.y);
+
         this.ctx.closePath()
     }
     clean(...args: any) {
@@ -36,6 +45,9 @@ export class UIButton extends GameObject<CanvasRenderingContext2D> {
 
     setText(text: string) {
         this.text = text;
+    }
+    setPosition(x: number, y: number) {
+        this.position = { x, y }
     }
 
 }

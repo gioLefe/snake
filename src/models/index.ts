@@ -6,4 +6,4 @@ export * from './pivot';
 export * from './polygon';
 export * from './structs';
 export * from './vec';
-export * from './scene';
+export * from './canvas-scene';

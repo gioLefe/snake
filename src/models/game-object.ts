@@ -19,4 +19,11 @@ export abstract class GameObject<T> implements GameCycle<T> {
     }
     clean(...args: any) {
     }
+
+    getNW() {
+
+    }
+    getSE() {
+
+    }
 }

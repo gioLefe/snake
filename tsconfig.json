@@ -22,7 +22,10 @@
     "baseUrl": "./src",
     "paths": {
       "@octo/models": ["models"],
-      "@octo/helpers": ["helpers"]
+      "@octo/helpers": ["helpers"],
+      "@octo/ui/canvas": ["ui/canvas"],
+      "@octo/ui/canvas/models": ["ui/canvas/models"],
+      "@octo/ui/controls": ["ui/controls"]
     }
   },
   "include": ["src"]
