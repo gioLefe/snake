@@ -1,6 +1,6 @@
 import { Game } from "@octo/models";
 import { ClassicGameScene } from "snake/scene/classic-game/classic-game";
-import { MainMenu } from "snake/scene/main-menu/main-menu";
+import { MAIN_MENU_SCENE_ID, MainMenu } from "./scene/main-menu/main-menu";
 
 const canvas = document.querySelector("canvas");
 
@@ -15,9 +15,11 @@ export class SnakeGame extends Game {
         super.init(this.ctx);
 
         // This is a test, it should load the main menu
-        // const game = new ClassicGameScene(this.ctx, canvas, { x: canvas.width / 2, y: canvas.height / 2 });
-        const game = new MainMenu(this.ctx, canvas);
-        this.sceneManager?.changeScene(game, false);
+        const game = new ClassicGameScene(this.ctx, canvas, { x: canvas.width / 2, y: canvas.height / 2 });
+        this.sceneManager?.addScene(game);
+        const menu = new MainMenu(this.ctx, canvas);
+        this.sceneManager?.addScene(menu);
+        this.sceneManager?.changeScene(MAIN_MENU_SCENE_ID, false);
     }
 
     //

@@ -1,17 +1,19 @@
+import { DIContainer } from "@octo/core";
+import { SceneHandler, SceneManager } from "@octo/helpers";
 import { GameCycle } from "@octo/models";
-import { SceneManager } from "helpers/scene-manager";
+
+export const SCENE_MANAGER_DI = 'SceneManager'
 
 export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
-    private canvasWidth: number = 0;
-    private canvasHeight: number = 0;
     protected canvas: HTMLCanvasElement | undefined;
     protected ctx: CanvasRenderingContext2D | null | undefined;
 
     private lastUpdateTime: number = 0;
     private deltaTime: number = 0;
     private frameInterval: number = 0
+    private diContainer = DIContainer.getInstance();
 
-    protected sceneManager: SceneManager | undefined;
+    protected sceneManager: SceneHandler | undefined;
 
     private debug: { init: boolean, update: boolean, render: boolean } = {
         init: false,
@@ -25,8 +27,8 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
             return;
         }
         this.canvas = canvas
-        this.canvas.width = this.canvasWidth = canvasWidth;
-        this.canvas.height = this.canvasHeight = canvasHeight;
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
 
         this.ctx = this.canvas.getContext('2d');
 
@@ -45,6 +47,7 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
 
     init(ctx: CanvasRenderingContext2D): void {
         this.sceneManager = new SceneManager(ctx);
+        this.diContainer.register<SceneHandler>(SCENE_MANAGER_DI, this.sceneManager)
 
         if (this.debug.init)
             console.log(`%c *** Init`, `background:#020; color:#adad00`)

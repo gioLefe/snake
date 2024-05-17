@@ -1,10 +1,12 @@
 import { isPointInAlignedBBox } from "@octo/helpers";
 import { CanvasScene2D, Vec2 } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
-import { playLblClick } from "snake/scene/main-menu/main-menu-inputs";
+import { playLblClick } from "./main-menu-inputs";
+
+export const MAIN_MENU_SCENE_ID = 'main-menu';
 
 export class MainMenu implements CanvasScene2D {
-    id: string = 'main-menu';
+    id: string = MAIN_MENU_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
     ctx: CanvasRenderingContext2D | undefined;
 
@@ -68,6 +70,6 @@ export class MainMenu implements CanvasScene2D {
         this.play?.render();
     }
     clean(...args: any) {
-        throw new Error("Method not implemented.");
+        console.warn("Method not implemented.");
     }
 }

@@ -21,6 +21,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "./src",
     "paths": {
+      "@octo/core": ["core"],
       "@octo/models": ["models"],
       "@octo/helpers": ["helpers"],
       "@octo/ui/canvas": ["ui/canvas"],

@@ -4,9 +4,10 @@ import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inpu
 import { CanvasScene2D, Vec2 } from "@octo/models";
 
 const canvasBgColor = "#afd7db"
+export const CLASSIC_GAME_SCENE_ID = 'classic-game-scene';
 
 export class ClassicGameScene implements CanvasScene2D {
-    id: string = 'classic-game-scene';
+    id: string = CLASSIC_GAME_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
     ctx: CanvasRenderingContext2D | undefined;
 

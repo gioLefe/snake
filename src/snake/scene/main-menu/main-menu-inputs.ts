@@ -1,9 +1,9 @@
-export function playLblClick(x: number, y: number) {
-    console.log('click! at coordinates', x, y)
+import { DIContainer } from "@octo/core";
+import { SceneHandler } from "@octo/helpers";
+import { SCENE_MANAGER_DI } from "@octo/models";
+import { CLASSIC_GAME_SCENE_ID } from "snake/scene/classic-game/classic-game";
 
-    // TODO I don't have access to the scene Manager from here. 
-    // Should I 
-    // - implement Dependency Injection 
-    // - pass a reference to each scene
-    // - Implement SceneManager as a Singleton
+export function playLblClick(x: number, y: number) {
+    const sceneManager = DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
+    sceneManager.changeScene(CLASSIC_GAME_SCENE_ID, true)
 }
