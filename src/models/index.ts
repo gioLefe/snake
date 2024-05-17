@@ -1,4 +1,5 @@
 export * from './game';
+export * from './bbox';
 export * from './game-cycle';
 export * from './game-object';
 export * from './min-max';

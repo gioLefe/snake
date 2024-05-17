@@ -1,5 +1,5 @@
-import { Vec2 } from "@octo/models";
-import { BoundingBox, FillStrokeStyle } from "@octo/ui/canvas/models";
+import { BoundingBox, Vec2 } from "@octo/models";
+import { FillStrokeStyle } from "@octo/ui/canvas/models";
 import { GameObjectWithEvents } from "../with-events";
 import { getTextBBox } from "ui/canvas/helpers/text";
 

@@ -6,6 +6,7 @@ export abstract class Pickup extends GameObject<CanvasRenderingContext2D> {
 
 export abstract class PickupItem extends Pickup {
     id: string = '';
+
     constructor() {
         super()
     }
@@ -24,6 +25,5 @@ export abstract class PickupItem extends Pickup {
 
     onPickup(...args: any) {
         super.onPickup(args);
-        return;
     }
 }

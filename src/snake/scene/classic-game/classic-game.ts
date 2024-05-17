@@ -1,4 +1,4 @@
-import { Pickup, Snake } from "../../models";
+import { Food, Pickup, Snake } from "../../models";
 import { initSnake } from "./classic-game-init";
 import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inputs";
 import { CanvasScene2D, Vec2 } from "@octo/models";
@@ -53,5 +53,9 @@ export class ClassicGameScene implements CanvasScene2D {
     }
     clean(...args: any) {
         throw new Error("Method not implemented.");
+    }
+
+    private spawnFood() {
+        this.pickups.push()
     }
 }

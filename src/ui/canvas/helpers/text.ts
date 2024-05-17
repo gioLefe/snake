@@ -1,5 +1,4 @@
-import { Vec2 } from "@octo/models";
-import { BoundingBox } from "../models/bbox";
+import { BoundingBox, Vec2 } from "@octo/models";
 
 export function getTextBBox(ctx: CanvasRenderingContext2D, text: string, position: Vec2<number>): BoundingBox<number> {
     // Measure the text
