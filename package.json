@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^5.2.2",
-    "vite": "^5.2.8",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
     "vite-tsconfig-paths": "^4.3.2"
   }
 }
