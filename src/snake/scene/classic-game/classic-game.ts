@@ -15,10 +15,10 @@ export class ClassicGameScene implements CanvasScene2D {
     playerSnake: Snake | undefined = undefined;
     pickups: Pickup[] = []
 
-    constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, initialPlayerPosition: Vec2<number>) {
+    constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, initialWorldCoordinates: Vec2<number>) {
         this.ctx = ctx
         this.canvas = canvas
-        this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialPlayerPosition.x, y: initialPlayerPosition.y } });
+        this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y } });
     }
     init(): void {
         if (this.playerSnake === undefined) {
@@ -28,12 +28,11 @@ export class ClassicGameScene implements CanvasScene2D {
         registerMouseEvents(this.playerSnake)
     }
 
-    //
     update(deltaTime: number): void {
         this.playerSnake?.update(deltaTime);
 
         if (this.pickups.length === 0) {
-            const rat = new Rat('alberto')
+            const rat = new Rat('rat')
             this.pickups.push(rat);
             if (this.ctx !== undefined) {
                 rat.init(this.ctx)
@@ -53,9 +52,8 @@ export class ClassicGameScene implements CanvasScene2D {
         this.ctx.fillStyle = canvasBgColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-        // TODO: Render food
-        this.pickups.forEach((p) =>
-            p.render())
+        // Render food
+        this.pickups.forEach((p) => p.render())
 
         // TODO: Reender Powerups
 

@@ -16,6 +16,7 @@ export class UILabel extends GameObjectWithEvents<CanvasRenderingContext2D> {
     private strokeStyle: FillStrokeStyle = "#000"
     private bbox: BoundingBox<number> = { nw: { x: 0, y: 0 }, se: { x: 0, y: 0 } };
 
+
     constructor(id: string, posX: number, posY: number, textStyle?: Partial<CanvasTextDrawingStyles>, text?: string) {
         super()
         this.id = id;
@@ -27,7 +28,7 @@ export class UILabel extends GameObjectWithEvents<CanvasRenderingContext2D> {
     }
 
     init(ctx: CanvasRenderingContext2D, ...args: any) {
-        super.init(ctx, args);
+        super.init(ctx, ...args);
     }
     update(deltaTime: number, ...args: any) {
         super.update(deltaTime, args);

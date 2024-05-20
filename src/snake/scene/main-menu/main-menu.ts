@@ -1,7 +1,6 @@
-import { isPointInAlignedBBox } from "@octo/helpers";
-import { CanvasScene2D, Vec2 } from "@octo/models";
+import { CanvasScene2D } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
-import { playLblClick } from "./main-menu-inputs";
+import { PlayBtn } from "./models/play-btn";
 
 export const MAIN_MENU_SCENE_ID = 'main-menu';
 
@@ -12,35 +11,23 @@ export class MainMenu implements CanvasScene2D {
 
     // UI
     title: UILabel | undefined
-    play: UILabel | undefined
+    playBtn: UILabel | undefined
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
         this.title = new UILabel('', this.canvas?.width / 2 - 100, 60, { font: "48px Verdana" }, 'SeRPeNT');
-        this.title.setFillStyle("#FFF");
+        this.title.setFillStyle("#aFF");
         this.title.setStrokeStyle("#32FFaF");
 
-        this.play = new UILabel('', this.canvas?.width / 2 - 50, this.canvas?.height / 2, { font: '48px Verdana' }, 'PLAY');
-        this.play.setFillStyle("#204Fa1");
-        this.play.setStrokeStyle("#00FFad");
+        this.playBtn = new PlayBtn('', this.canvas?.width / 2 - 50, this.canvas?.height / 2, { font: '48px Verdana' }, 'PLAY');
+        this.playBtn.setFillStyle("#204Fa1");
+        this.playBtn.setStrokeStyle("#00FFad");
     }
 
     init(ctx: CanvasRenderingContext2D): void {
         this.title?.init(ctx);
-        this.play?.init(ctx);
-
-        this.play?.addEvent("click", playLblClick);
-
-        this.canvas?.addEventListener("click", (ev) => {
-            const point: Vec2<number> = { x: ev.x, y: ev.y };
-            const bbox = this.play?.getBBox()
-            if (bbox && isPointInAlignedBBox(point, bbox)) {
-                this.play?.events?.filter((e) => e.eType === "click").forEach((e) => {
-                    e.event(point.x, point.y);
-                })
-            }
-        })
+        this.playBtn?.init(ctx, this.canvas);
 
         // TODO Fix the repositioning of the title
         // const titleMetrics = this.title.getSize();
@@ -51,7 +38,7 @@ export class MainMenu implements CanvasScene2D {
     }
     update(deltaTime: number, ...args: any) {
         this.title?.update(deltaTime)
-        this.play?.update(deltaTime)
+        this.playBtn?.update(deltaTime)
     }
     render(...args: any) {
         if (this.canvas === undefined || this.canvas === null) {
@@ -67,9 +54,9 @@ export class MainMenu implements CanvasScene2D {
 
         // UI elements
         this.title?.render();
-        this.play?.render();
+        this.playBtn?.render();
     }
     clean(...args: any) {
-        console.warn("Method not implemented.");
+        this.playBtn?.clean()
     }
 }
