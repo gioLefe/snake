@@ -1,5 +1,4 @@
-import { DIContainer } from "@octo/core";
-import { SceneHandler, SceneManager } from "@octo/helpers";
+import { SceneHandler, SceneManager, DIContainer } from "@octo/core";
 import { GameCycle } from "@octo/models";
 
 export const SCENE_MANAGER_DI = 'SceneManager'

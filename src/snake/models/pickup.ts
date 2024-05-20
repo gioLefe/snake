@@ -1,7 +1,12 @@
-import { GameObject } from "@octo/models";
+import { GameObject, Vec2 } from "@octo/models";
 
 export abstract class Pickup extends GameObject<CanvasRenderingContext2D> {
+    protected position: Vec2<number> | undefined;
+
     onPickup(...args: any): any { }
+    getPosition(): Vec2<number> | undefined {
+        return this.position;
+    };
 }
 
 export abstract class PickupItem extends Pickup {

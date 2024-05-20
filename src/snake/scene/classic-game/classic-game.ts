@@ -1,3 +1,4 @@
+import { Rat } from "snake/models/pickup/food/rat";
 import { Food, Pickup, Snake } from "../../models";
 import { initSnake } from "./classic-game-init";
 import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inputs";
@@ -17,7 +18,7 @@ export class ClassicGameScene implements CanvasScene2D {
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, initialPlayerPosition: Vec2<number>) {
         this.ctx = ctx
         this.canvas = canvas
-        this.playerSnake = initSnake(ctx, { position: { x: initialPlayerPosition.x, y: initialPlayerPosition.y } });
+        this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialPlayerPosition.x, y: initialPlayerPosition.y } });
     }
     init(): void {
         if (this.playerSnake === undefined) {
@@ -30,6 +31,14 @@ export class ClassicGameScene implements CanvasScene2D {
     //
     update(deltaTime: number): void {
         this.playerSnake?.update(deltaTime);
+
+        if (this.pickups.length === 0) {
+            const rat = new Rat('alberto')
+            this.pickups.push(rat);
+            if (this.ctx !== undefined) {
+                rat.init(this.ctx)
+            }
+        }
     }
 
     render(): void {
@@ -44,18 +53,16 @@ export class ClassicGameScene implements CanvasScene2D {
         this.ctx.fillStyle = canvasBgColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-        // Player snake
-        this.playerSnake?.render(this.ctx);
-
         // TODO: Render food
+        this.pickups.forEach((p) =>
+            p.render())
 
         // TODO: Reender Powerups
+
+        // Player snake
+        this.playerSnake?.render(this.ctx);
     }
     clean(...args: any) {
-        throw new Error("Method not implemented.");
-    }
-
-    private spawnFood() {
-        this.pickups.push()
+        console.warn("Method not implemented.");
     }
 }

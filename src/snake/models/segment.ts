@@ -5,7 +5,6 @@ import { Snake } from "./";
 export class Segment extends GameObject<CanvasRenderingContext2D> {
     polygon: Polygon = {
         sideLength: 0,
-        position: { x: 0, y: 0 },
         numSides: 0,
         points: []
     };
@@ -13,17 +12,18 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     private nextPivot: LinkedListNode<Pivot> | undefined;
     private snake: Snake;
     private isTail = false;
+    private position: Vec2<number> = { x: 0, y: 0 };
 
-    constructor(direction: number, isTail = false, snake: Snake, polygonOptions?: Partial<Polygon>) {
+    constructor(direction: number, isTail = false, snake: Snake, worldPosition?: Vec2<number>, polygonOptions?: Partial<Polygon>) {
         super();
         this.snake = snake
         this.isTail = isTail
         this.direction = direction;
+        this.position = worldPosition ?? { x: 0, y: 0 };
         this.polygon = createPolygon({
             sideLength: polygonOptions?.sideLength,
             numSides: polygonOptions?.numSides,
             color: polygonOptions?.color,
-            position: polygonOptions?.position ?? { x: 0, y: 0 },
             outline: polygonOptions?.outline
         })
         this.rotate(this.direction)
@@ -33,7 +33,7 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     }
     render(...args: any): void {
         super.render(args);
-        renderPolygon(this.polygon, this.ctx!);
+        renderPolygon(this.polygon, this.ctx!, { worldCoordinates: this.position });
     }
     clean(...args: any) {
         super.clean(args)
@@ -45,10 +45,10 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     }
 
     getPosition(): Vec2<number> {
-        return this.polygon.position
+        return this.position
     }
     setPosition(value: Vec2<number>): void {
-        this.polygon.position = value
+        this.position = value
     }
 
     getDirection(): number {

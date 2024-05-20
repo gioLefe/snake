@@ -5,7 +5,7 @@ import { Pivot, pivotComparator } from "../../models/pivot";
 import { Segment } from "./segment";
 
 export type SnakeInitParam = Partial<Snake> & {
-    position?: Vec2<number>,
+    worldCoordinates?: Vec2<number>,
     initialDirection?: number,
     length?: number
 }
@@ -41,28 +41,30 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         if (args?.initialDirection) {
             this.direction = args.initialDirection
         }
-        this.segments[0] = new Segment(this.direction, false, this, {
+        this.segments[0] = new Segment(this.direction, false, this, args.worldCoordinates, {
             sideLength: DEFAULT_POLYGON_SIZE,
             numSides: 10,
             color: "#86a04e",
-            position: args.position ?? { x: 0, y: 0 },
             outline: true
         });
+        this.segments[0].init(ctx);
 
         for (let i = 1; i < (args.length ?? this.length); i++) {
             const previousBit: Segment = this.segments[i - 1]
             const tailDirection: number = this.direction + Math.PI
 
-            this.segments[i] =
-                new Segment(this.direction, i === this.length - 1, this, {
+            this.segments[i] = new Segment(
+                this.direction,
+                i === this.length - 1,
+                this,
+                {
+                    x: previousBit.getPosition().x + this.getSpeed() * Math.cos(tailDirection) * this.BIT_DISTANCE,
+                    y: previousBit.getPosition().y + this.getSpeed() * Math.sin(tailDirection) * this.BIT_DISTANCE
+                },
+                {
                     sideLength: this.calcPolygonSize(i, this.length),
                     numSides: 10,
                     color: "#576c1a",
-                    position:
-                    {
-                        x: previousBit.getPosition().x + this.getSpeed() * Math.cos(tailDirection) * this.BIT_DISTANCE,
-                        y: previousBit.getPosition().y + this.getSpeed() * Math.sin(tailDirection) * this.BIT_DISTANCE
-                    },
                     outline: true
                 });
             this.segments[i].init(ctx)
@@ -71,16 +73,14 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     clean(...args: any) {
         throw new Error("Method not implemented.");
     }
-
     render(...args: any): void {
         super.render(args);
         for (let i = this.segments.length - 1; i >= 0; i--) {
-            renderPolygon(this.segments[i].polygon, this.ctx!)
+            this.segments[i].render();
         }
 
         if (DEBUG) { this.renderDebug(this.ctx!) }
     }
-
     update(deltaTime: number, ...args: any) {
         super.update(deltaTime, args)
         const speed = this.getSpeed();
@@ -123,11 +123,9 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             }
         }
     }
-
     steerTo(point: Vec2<number>): void {
         this.targetPoint = point
     }
-
     setTurbo(turbo: boolean) {
         this.turbonOn = turbo
     }
@@ -138,11 +136,9 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     getDirection(): number {
         return this.segments[0].getDirection()
     }
-
     getSpeed(): number {
         return this.turbonOn ? this.turboSpeed : this.speed
     }
-
     popPivot(): Pivot | undefined {
         if (this.pivots.size()) {
             const pivot = this.pivots.head;

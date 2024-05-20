@@ -1,5 +1,4 @@
 export * from './math'
 export * from './polygon'
 export * from './sat-collisions.utils'
-export * from './scene-manager'
 export * from './rect-collision'

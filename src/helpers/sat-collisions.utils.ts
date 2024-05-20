@@ -1,14 +1,19 @@
-import { Polygon } from "@octo/models";
+import { Polygon, Vec2 } from "@octo/models";
 import { intervalsOverlap, projectPolygonToAxis } from "./";
 
-export function checkSATCollision(polygonA: Polygon, polygonB: Polygon): boolean {
+/** A polygon with world coordinates information */
+export type WorldPolygon = Polygon & {
+    worldCoordinates: Vec2<number>
+}
+
+export function checkSATCollision(polygonA: WorldPolygon, polygonB: WorldPolygon): boolean {
     if (polygonA.normals === undefined) {
         return false
     }
     for (let z = 0; z < polygonA.normals.length; z++) {
         // Transform polygons points to space coordinates
-        const polAVertices = polygonA.points.map((point) => ({ x: point.x + polygonA.position.x, y: point.y + polygonA.position.y }))
-        const polBVertices = polygonB.points.map((point) => ({ x: point.x + polygonB.position.x, y: point.y + polygonB.position.y }))
+        const polAVertices = polygonA.points.map((point) => ({ x: point.x + polygonA.worldCoordinates.x, y: point.y + polygonA.worldCoordinates.y }))
+        const polBVertices = polygonB.points.map((point) => ({ x: point.x + polygonB.worldCoordinates.x, y: point.y + polygonB.worldCoordinates.y }))
 
         // 2. Project vertices onto the perpendiculars
         const polAProjection = projectPolygonToAxis(polAVertices, polygonA.normals[z]);

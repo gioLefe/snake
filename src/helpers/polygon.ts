@@ -6,12 +6,14 @@ export interface RenderingPolygonParams {
   strokeColor?: string;
   selectedStrokeColor?: string;
   collisionStrokeColor?: string;
+  worldCoordinates: Vec2<number>
 }
 
 const DEFAULT_POLYGON_PARAMS: RenderingPolygonParams = {
   strokeColor: "#000000",
   selectedStrokeColor: "#aa0000",
-  collisionStrokeColor: "#00a4FF"
+  collisionStrokeColor: "#00a4FF",
+  worldCoordinates: { x: 0, y: 0 }
 }
 
 export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, options: RenderingPolygonParams = DEFAULT_POLYGON_PARAMS): void {
@@ -26,8 +28,8 @@ export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, o
 
   // Move to the first point, calculated as the origin summed to the first point ocordinates
   const origin: Vec2<number> = {
-    x: polygon.position.x + polygon.points[0].x,
-    y: polygon.position.y + +polygon.points[0].y,
+    x: options.worldCoordinates.x + polygon.points[0].x,
+    y: options.worldCoordinates.y + +polygon.points[0].y,
   };
   ctx.moveTo(origin.x, origin.y);
   ctx.strokeStyle = options.strokeColor ?? DEFAULT_POLYGON_PARAMS.strokeColor!
@@ -40,8 +42,8 @@ export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, o
   ctx.beginPath();
   for (let i = 1; i < polygon.points.length; i++) {
     ctx.lineTo(
-      polygon.position.x + polygon.points[i].x,
-      polygon.position.y + +polygon.points[i].y
+      options.worldCoordinates.x + polygon.points[i].x,
+      options.worldCoordinates.y + +polygon.points[i].y
     );
   }
   ctx.lineTo(origin.x, origin.y);
@@ -67,10 +69,6 @@ export function createTriangle(height: number, color: string = "#ffb3ba"): Polyg
       { x: height / 2, y: height / 2 },
       { x: height / 2, y: -height / 2 },
     ],
-    position: {
-      x: 0,
-      y: 0,
-    },
     sideLength: 2 * height / Math.sqrt(3)
   } as Polygon;
 }
@@ -89,10 +87,6 @@ export function createSquare(sideLength: number, color: string = "#ffb3ba"): Pol
       { x: sideLength / 2, y: -sideLength / 2 },
       { x: -sideLength / 2, y: -sideLength / 2 },
     ],
-    position: {
-      x: 0,
-      y: 0,
-    },
     sideLength
   } as Polygon;
 }
@@ -106,7 +100,6 @@ export function createPolygon(
     outline: defaults.outline ?? true,
     numSides: defaults.numSides ?? 3,
     points: generatePolygonPoints(defaults.numSides ?? 3, defaults.sideLength ?? 10),
-    position: defaults.position ?? { x: 0, y: 0 },
     sideLength: defaults.sideLength ?? 10
   } as Polygon;
 }
