@@ -1,8 +1,12 @@
-import { Game } from "@octo/models";
-import { ClassicGameScene } from "snake/scene/classic-game/classic-game";
-import { MAIN_MENU_SCENE_ID, MainMenu } from "./scene/main-menu/main-menu";
+import { Game, Vec2 } from "@octo/models";
+import { ClassicGameScene } from "snake/scene/classic-game/classic-game.scene";
+import { MAIN_MENU_SCENE_ID, MainMenuScene } from "./scene/main-menu/main-menu.scene";
+import { LoadingScene } from "snake/scene/loading/loading.scene";
 
 const canvas = document.querySelector("canvas");
+
+const CANVAS_SIZE: Vec2<number> = { x: 1024, y: 768 }
+const FPS = 60
 
 export class SnakeGame extends Game {
     init(): void {
@@ -14,23 +18,17 @@ export class SnakeGame extends Game {
         }
         super.init(this.ctx);
 
-        // This is a test, it should load the main menu
-        const game = new ClassicGameScene(this.ctx, canvas, { x: canvas.width / 2, y: canvas.height / 2 });
-        this.sceneManager?.addScene(game);
-        const menu = new MainMenu(this.ctx, canvas);
-        this.sceneManager?.addScene(menu);
+        this.sceneManager?.addScene(new ClassicGameScene(this.ctx, canvas, { x: canvas.width / 2, y: canvas.height / 2 }));
+        this.sceneManager?.addScene(new MainMenuScene(this.ctx, canvas));
+
+        const loadingScene = new LoadingScene(this.ctx, canvas)
+        this.sceneManager?.addScene(loadingScene);
+
+        loadingScene.init(this.ctx);
+
         this.sceneManager?.changeScene(MAIN_MENU_SCENE_ID, false);
-    }
-
-    //
-    update(deltaTime: number): void {
-        super.update(deltaTime);
-    }
-
-    render(): void {
-        super.render();
     }
 }
 
-const SNAKE_GAME = new SnakeGame(canvas, 1024, 768, 60);
+const SNAKE_GAME = new SnakeGame(canvas, CANVAS_SIZE.x, CANVAS_SIZE.y, FPS);
 SNAKE_GAME.start(); 

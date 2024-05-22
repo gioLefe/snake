@@ -2,7 +2,8 @@ import { DIContainer, SceneHandler } from "@octo/core";
 import { isPointInAlignedBBox as isPointInBBox } from "@octo/helpers";
 import { SCENE_MANAGER_DI } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
-import { CLASSIC_GAME_SCENE_ID } from "../../classic-game/classic-game";
+import { CLASSIC_GAME_SCENE_ID } from "../../classic-game/classic-game.scene";
+import { LOADING_SCENE_SCENE_ID } from "snake/scene/loading/loading.scene";
 
 export class PlayBtn extends UILabel {
     private mouseOver = false;
@@ -39,7 +40,7 @@ export class PlayBtn extends UILabel {
 
     private playLblClick(x: number, y: number) {
         const sceneManager = DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
-        sceneManager.changeScene(CLASSIC_GAME_SCENE_ID, true)
+        sceneManager.changeScene(CLASSIC_GAME_SCENE_ID, true, LOADING_SCENE_SCENE_ID)
     }
 }
 

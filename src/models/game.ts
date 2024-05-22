@@ -1,7 +1,9 @@
 import { SceneHandler, SceneManager, DIContainer } from "@octo/core";
 import { GameCycle } from "@octo/models";
+import { AssetsHandler, AssetsManager } from "core/assets-manager";
 
 export const SCENE_MANAGER_DI = 'SceneManager'
+export const ASSETS_MANAGER_DI = 'AsetsManager'
 
 export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
     protected canvas: HTMLCanvasElement | undefined;
@@ -13,6 +15,7 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
     private diContainer = DIContainer.getInstance();
 
     protected sceneManager: SceneHandler | undefined;
+    protected assetsManager: AssetsHandler | undefined;
 
     private debug: { init: boolean, update: boolean, render: boolean } = {
         init: false,
@@ -30,14 +33,14 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
         this.canvas.height = canvasHeight;
 
         this.ctx = this.canvas.getContext('2d');
-
-        this.lastUpdateTime = 0;
-        this.deltaTime = 0;
-
-        this.frameInterval - 1000 / fps
         if (this.ctx === null) {
             throw Error('ctx is null');
         }
+
+        this.lastUpdateTime = 0;
+        this.deltaTime = 0;
+        this.frameInterval - 1000 / fps
+
         this.init(this.ctx);
     }
     clean(...args: any) {
@@ -46,41 +49,48 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
 
     init(ctx: CanvasRenderingContext2D): void {
         this.sceneManager = new SceneManager(ctx);
+        this.assetsManager = new AssetsManager();
         this.diContainer.register<SceneHandler>(SCENE_MANAGER_DI, this.sceneManager)
+        this.diContainer.register<AssetsHandler>(ASSETS_MANAGER_DI, this.assetsManager)
 
-        if (this.debug.init)
+        if (this.debug.init) {
             console.log(`%c *** Init`, `background:#020; color:#adad00`)
+        }
     }
 
     update(deltaTime: number): void {
-        if (this.debug.update)
+        if (this.debug.update) {
             console.log(`%c *** Update`, `background:#020; color:#adad00`)
+        }
 
-        this.sceneManager?.getCurrentScene()?.update(deltaTime)
+        this.sceneManager?.getCurrentScenes()?.forEach((scene) => scene.update(deltaTime));
     }
 
     render(...args: any): void {
-        if (this.debug.render)
-            console.log(`%c *** Render`, `background:#020; color:#adad00`)
+        const currentScenes = this.sceneManager?.getCurrentScenes();
+        if (this.debug.render) {
+            console.log(`%c *** Render ${currentScenes?.map((s) => s.id)}`, `background:#020; color:#adad00`)
+        }
 
-        this.sceneManager?.getCurrentScene()?.render(this.ctx);
+        if (currentScenes === undefined) {
+            console.warn('no scene to render')
+            return;
+        }
+        currentScenes.forEach((scene) => scene.render(this.ctx));
     }
 
     gameLoop(timestamp: number): void {
         const elapsed = timestamp - this.lastUpdateTime;
 
         if (elapsed > this.frameInterval) {
-            // Calculate deltaTime
             this.deltaTime = (timestamp - this.lastUpdateTime) / 1000; // Convert to seconds
             this.lastUpdateTime = timestamp;
 
-            // Update game state
             this.update(this.deltaTime);
 
             // Clear canvas
             this.ctx!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
 
-            // Render game
             this.render(this.ctx!);
         }
 

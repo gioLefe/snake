@@ -4,7 +4,7 @@ import { PlayBtn } from "./models/play-btn";
 
 export const MAIN_MENU_SCENE_ID = 'main-menu';
 
-export class MainMenu implements CanvasScene2D {
+export class MainMenuScene implements CanvasScene2D {
     id: string = MAIN_MENU_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
     ctx: CanvasRenderingContext2D | undefined;

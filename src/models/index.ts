@@ -1,3 +1,4 @@
+export * from './asset';
 export * from './game';
 export * from './bbox';
 export * from './game-cycle';

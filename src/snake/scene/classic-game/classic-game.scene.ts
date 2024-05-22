@@ -1,31 +1,45 @@
+import { ASSETS_MANAGER_DI, CanvasScene2D, Vec2 } from "@octo/models";
 import { Rat } from "snake/models/pickup/food/rat";
-import { Food, Pickup, Snake } from "../../models";
-import { initSnake } from "./classic-game-init";
-import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inputs";
-import { CanvasScene2D, Vec2 } from "@octo/models";
+import { Pickup, Snake } from "../../models";
+import { CLASSIC_GAME_IMAGE_ASSETS, initSnake } from "./classic-game-init.scene";
+import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inputs.scene";
+import { AssetsHandler, DIContainer } from "@octo/core";
 
 const canvasBgColor = "#afd7db"
-export const CLASSIC_GAME_SCENE_ID = 'classic-game-scene';
+export const CLASSIC_GAME_SCENE_ID = 'classic-game';
 
 export class ClassicGameScene implements CanvasScene2D {
     id: string = CLASSIC_GAME_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
     ctx: CanvasRenderingContext2D | undefined;
+    assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
     playerSnake: Snake | undefined = undefined;
-    pickups: Pickup[] = []
+    pickups: Pickup[] = [];
+    allImagesPromises: Promise<void>[] = [];
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, initialWorldCoordinates: Vec2<number>) {
         this.ctx = ctx
         this.canvas = canvas
         this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y } });
     }
-    init(): void {
+    init(): Promise<any> {
         if (this.playerSnake === undefined) {
             throw Error('player snake is not defined')
         }
         registerKeyboardEvents(this.playerSnake);
-        registerMouseEvents(this.playerSnake)
+        registerMouseEvents(this.playerSnake);
+
+        CLASSIC_GAME_IMAGE_ASSETS.forEach((i) => {
+            this.allImagesPromises.push(
+                new Promise(
+                    async (resolve, reject) => {
+                        await this.assetsManager.addImage(i.id, i.path);
+                        resolve();
+                    }
+                ))
+        })
+        return Promise.all(this.allImagesPromises);
     }
 
     update(deltaTime: number): void {

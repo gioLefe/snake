@@ -71,7 +71,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         }
     }
     clean(...args: any) {
-        throw new Error("Method not implemented.");
+        console.warn("Method not implemented.");
     }
     render(...args: any): void {
         super.render(args);

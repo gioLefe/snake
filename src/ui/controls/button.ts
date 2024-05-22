@@ -3,7 +3,7 @@ import { GameObject, Vec2 } from "@octo/models";
 export class UIButton extends GameObject<CanvasRenderingContext2D> {
     id: string | undefined;
     text: string | undefined;
-    size: TextMetrics | undefined
+    textMetric: TextMetrics | undefined
     position: Vec2<number> | undefined;
     textStyle: CanvasTextDrawingStyles | undefined;
 
@@ -21,7 +21,7 @@ export class UIButton extends GameObject<CanvasRenderingContext2D> {
     update(deltaTime: number, ...args: any) {
         super.update(deltaTime, args);
         if (this.text !== undefined) {
-            this.size = this.ctx?.measureText(this.text);
+            this.textMetric = this.ctx?.measureText(this.text);
         }
     }
     render(...args: any) {
