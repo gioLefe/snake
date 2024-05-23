@@ -1,7 +1,7 @@
 import { Game, Vec2 } from "@octo/models";
 import { ClassicGameScene } from "snake/scene/classic-game/classic-game.scene";
 import { MAIN_MENU_SCENE_ID, MainMenuScene } from "./scene/main-menu/main-menu.scene";
-import { LoadingScene } from "snake/scene/loading/loading.scene";
+import { LOADING_SCENE_SCENE_ID, LoadingScene } from "snake/scene/loading/loading.scene";
 
 const canvas = document.querySelector("canvas");
 
@@ -23,8 +23,6 @@ export class SnakeGame extends Game {
 
         const loadingScene = new LoadingScene(this.ctx, canvas)
         this.sceneManager?.addScene(loadingScene);
-
-        loadingScene.init(this.ctx);
 
         this.sceneManager?.changeScene(MAIN_MENU_SCENE_ID, false);
     }

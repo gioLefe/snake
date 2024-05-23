@@ -5,16 +5,20 @@ import { UILabel } from "@octo/ui/controls";
 import { CLASSIC_GAME_SCENE_ID } from "../../classic-game/classic-game.scene";
 import { LOADING_SCENE_SCENE_ID } from "snake/scene/loading/loading.scene";
 
+const MOUSE_CLICK = "playBtnClick"
+const MOUSE_ENTER_ID = "playBtnMouseMove-enter"
+const MOUSE_LEAVE_ID = "playBtnMouseMove-leave"
+
 export class PlayBtn extends UILabel {
     private mouseOver = false;
 
     init(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, ...args: any): void {
         super.init(ctx, canvas);
-        this.addMouseCallback("click", 'playBtnClick', this.playLblClick, (ev) =>
+        this.addMouseCallback("click", MOUSE_CLICK, this.playLblClick, (ev) =>
             isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()));
         this.enableMouseEvent('click');
 
-        this.addMouseCallback("mousemove", 'playBtnMouseMove-enter', () => this.playBtnMouseEnter(), (ev) =>
+        this.addMouseCallback("mousemove", MOUSE_ENTER_ID, () => this.playBtnMouseEnter(), (ev) =>
             isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()) && this.mouseOver === false);
         this.enableMouseEvent('mousemove');
     }
@@ -28,14 +32,14 @@ export class PlayBtn extends UILabel {
     private playBtnMouseEnter() {
         this.setFillStyle("#a22");
         this.mouseOver = true;
-        this.addMouseCallback("mousemove", 'playBtnMouseMove-leave', () => this.playBtnMouseLeave(), (ev) =>
+        this.addMouseCallback("mousemove", MOUSE_LEAVE_ID, () => this.playBtnMouseLeave(), (ev) =>
             !isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()));
 
     }
     private playBtnMouseLeave() {
         this.setFillStyle("#204Fa1");
         this.mouseOver = false;
-        this.removeMouseCallback('playBtnMouseMove-leave');
+        this.removeMouseCallback(MOUSE_LEAVE_ID);
     }
 
     private playLblClick(x: number, y: number) {

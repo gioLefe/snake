@@ -12,6 +12,7 @@ export class MainMenuScene implements CanvasScene2D {
     // UI
     title: UILabel | undefined
     playBtn: UILabel | undefined
+    allImagesPromises: Promise<void>[] = [];
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
@@ -57,6 +58,7 @@ export class MainMenuScene implements CanvasScene2D {
         this.playBtn?.render();
     }
     clean(...args: any) {
+        this.title?.clean()
         this.playBtn?.clean()
     }
 }

@@ -11,7 +11,6 @@ export class SceneManager implements SceneHandler {
     private currentScenes: CanvasScene2D[] = [];
     private ctx: CanvasRenderingContext2D | undefined
     private scenes: CanvasScene2D[] = [];
-    private loading = false
 
     constructor(ctx: CanvasRenderingContext2D) { this.ctx = ctx }
     addScene(scene: CanvasScene2D): void {
@@ -22,34 +21,45 @@ export class SceneManager implements SceneHandler {
         this.scenes.push(scene);
     }
     deleteScene(id: string): void {
-        const i = this.getSceneIndex(id, this.scenes)
-        this.scenes[i].clean();
-        delete this.scenes[i]
+        const i = this.getSceneIndex(id, this.currentScenes)
+        this.currentScenes[i].clean();
+        this.currentScenes = this.currentScenes.filter((s, index) => index !== i)
     }
     getCurrentScenes(): CanvasScene2D[] | undefined {
         return this.currentScenes
     }
 
     async changeScene(id: string, cleanPreviousState: boolean = true, loadingSceneId?: string): Promise<void> {
+
         const lastCurrentSceneId = this.currentScenes[this.currentScenes.length - 1]?.id;
         const i = this.getSceneIndex(id, this.scenes);
+
+        if (loadingSceneId !== undefined) {
+            const loadingSceneIndex = this.getSceneIndex(loadingSceneId, this.scenes);
+            let loadingScene: CanvasScene2D = this.scenes[loadingSceneIndex];
+            const loadingScenePromises = loadingScene.init(this.ctx!);
+            if (loadingScenePromises !== undefined) {
+                await loadingScenePromises
+            }
+            this.currentScenes.push(loadingScene);
+        }
+
         const loadPromise = this.scenes[i].init(this.ctx!);
 
-        // Scene can return a promise, indicating it needs to load assets before it can render
+        // TODO: handle Deregistration of last scene user inputs (mouse and keybs)
+        //
+
         if (loadPromise !== undefined) {
-            if (loadingSceneId !== undefined) {
-                const loadingSceneIndex = this.getSceneIndex(loadingSceneId, this.scenes);
-                this.currentScenes.push(this.scenes[loadingSceneIndex]);
-                this.scenes[loadingSceneIndex].init(this.ctx!)
-            }
-            this.loading = true;
             await loadPromise;
-            if (cleanPreviousState && lastCurrentSceneId !== undefined) {
-                this.deleteScene(lastCurrentSceneId)
-            }
-            this.loading = false;
+        }
+        if (cleanPreviousState && lastCurrentSceneId !== undefined) {
+            this.deleteScene(lastCurrentSceneId);
+        }
+        if (loadingSceneId !== undefined) {
+            this.deleteScene(loadingSceneId);
         }
         this.currentScenes.push(this.scenes[i]);
+
     }
 
     private getSceneIndex(id: string, scenes: CanvasScene2D[]) {
@@ -60,7 +70,4 @@ export class SceneManager implements SceneHandler {
         return loadingSceneIndex;
     }
 
-    isLoading(): boolean {
-        return this.loading
-    }
 }

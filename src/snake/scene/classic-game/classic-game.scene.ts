@@ -35,11 +35,14 @@ export class ClassicGameScene implements CanvasScene2D {
                 new Promise(
                     async (resolve, reject) => {
                         await this.assetsManager.addImage(i.id, i.path);
-                        resolve();
+                        // TODO: move resolve outside the timeout and remove timeout, it is just for test purposes
+                        setTimeout(() => resolve(), 3000);
                     }
                 ))
         })
-        return Promise.all(this.allImagesPromises);
+        return Promise.all(this.allImagesPromises).then((r) => r).catch((reason) => {
+            console.error(reason)
+        });
     }
 
     update(deltaTime: number): void {
