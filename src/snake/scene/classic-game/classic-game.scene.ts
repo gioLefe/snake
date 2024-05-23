@@ -1,14 +1,17 @@
+import { AssetsHandler, DIContainer } from "@octo/core";
 import { ASSETS_MANAGER_DI, CanvasScene2D, Vec2 } from "@octo/models";
 import { Rat } from "snake/models/pickup/food/rat";
+import { withEvents } from "ui/with-events";
 import { Pickup, Snake } from "../../models";
 import { CLASSIC_GAME_IMAGE_ASSETS, initSnake } from "./classic-game-init.scene";
-import { registerKeyboardEvents, registerMouseEvents } from "./classic-game-inputs.scene";
-import { AssetsHandler, DIContainer } from "@octo/core";
 
 const canvasBgColor = "#afd7db"
 export const CLASSIC_GAME_SCENE_ID = 'classic-game';
+const MOUSE_MOVE_EVENT_ID = 'ClassicGameScene-mousemove';
+const KEY_DOWN_EVENT_ID = 'ClassicGameScene-keydown';
+const KEY_UP_EVENT_ID = 'ClassicGameScene-keyup';
 
-export class ClassicGameScene implements CanvasScene2D {
+export class ClassicGameScene extends withEvents(class { }) implements CanvasScene2D {
     id: string = CLASSIC_GAME_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
     ctx: CanvasRenderingContext2D | undefined;
@@ -19,6 +22,7 @@ export class ClassicGameScene implements CanvasScene2D {
     allImagesPromises: Promise<void>[] = [];
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, initialWorldCoordinates: Vec2<number>) {
+        super()
         this.ctx = ctx
         this.canvas = canvas
         this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y } });
@@ -27,8 +31,16 @@ export class ClassicGameScene implements CanvasScene2D {
         if (this.playerSnake === undefined) {
             throw Error('player snake is not defined')
         }
-        registerKeyboardEvents(this.playerSnake);
-        registerMouseEvents(this.playerSnake);
+        if (this.playerSnake === undefined) {
+            throw Error('snake is not initialized!')
+        }
+
+        this.addCallback("mousemove", MOUSE_MOVE_EVENT_ID, (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake!), () => true)
+        this.enableEvent('mousemove')(this.canvas!);
+        this.addCallback("keydown", KEY_DOWN_EVENT_ID, (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake!), () => true)
+        this.enableEvent('keydown')(window);
+        this.addCallback("keyup", KEY_UP_EVENT_ID, (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake!), () => true)
+        this.enableEvent('keyup')(window);
 
         CLASSIC_GAME_IMAGE_ASSETS.forEach((i) => {
             this.allImagesPromises.push(
@@ -78,6 +90,37 @@ export class ClassicGameScene implements CanvasScene2D {
         this.playerSnake?.render(this.ctx);
     }
     clean(...args: any) {
-        console.warn("Method not implemented.");
+        this.abortControllers.forEach((ac) => ac.abort());
+    }
+
+    private mouseMove = (ev: MouseEvent) => {
+        return (snake: Snake) => {
+            snake.steerTo({ x: ev.x, y: ev.y });
+        }
+    }
+
+    private keyDown = (ev: KeyboardEvent) => {
+        return (snake: Snake) => {
+            switch (ev.key) {
+                case 'a':
+                    snake.steer(- 0.25) // TODO: send SteerDirection
+                    break;
+                case 'd':
+                    snake.steer(+ 0.25) // TODO: send SteerDirection
+                    break;
+                case ' ':
+                    snake.setTurbo(true);
+                    break;
+            }
+        }
+    }
+    private keyUp = (ev: KeyboardEvent) => {
+        return (snake: Snake) => {
+            switch (ev.key) {
+                case ' ':
+                    snake.setTurbo(false);
+                    break;
+            }
+        }
     }
 }

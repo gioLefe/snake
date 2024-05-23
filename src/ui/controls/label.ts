@@ -1,9 +1,7 @@
-import { BoundingBox, Vec2 } from "@octo/models";
-import { FillStrokeStyle } from "@octo/ui/canvas/models";
-import { GameObjectWithEvents } from "../with-events";
-import { getTextBBox } from "ui/canvas/helpers/text";
+import { BoundingBox, GameObject, Vec2 } from "@octo/models";
+import { FillStrokeStyle, getTextBBox } from "@octo/ui/canvas";
 
-export class UILabel extends GameObjectWithEvents<CanvasRenderingContext2D> {
+export class UILabel extends GameObject<CanvasRenderingContext2D> {
     id: string | undefined;
     private position: Vec2<number> | undefined;
     private text: string | undefined;
@@ -16,9 +14,8 @@ export class UILabel extends GameObjectWithEvents<CanvasRenderingContext2D> {
     private strokeStyle: FillStrokeStyle = "#000"
     private bbox: BoundingBox<number> = { nw: { x: 0, y: 0 }, se: { x: 0, y: 0 } };
 
-
     constructor(id: string, posX: number, posY: number, textStyle?: Partial<CanvasTextDrawingStyles>, text?: string) {
-        super()
+        super();
         this.id = id;
         this.position = { x: posX, y: posY }
         if (textStyle !== undefined) {

@@ -1,64 +1,64 @@
-import { BoundingBox, GameObject, Vec2 } from "@octo/models";
 
-export type MouseEventType = 'click' | 'mousemove';
+export type EventType = keyof HTMLElementEventMap
 
-export type Callback = (...args: any) => void
+export type TriggerCondition<T extends UIEvent> = (ev: T) => boolean;
 
-export type TriggerCondition = (ev: MouseEvent) => boolean
-
-export type MouseCallbacks = {
-    eType: MouseEventType;
-    ev: Callback,
-    triggerCondition: TriggerCondition
+export type Callback = {
+    eType: EventType;
+    ev: Function,
+    triggerCondition?<T extends UIEvent>(ev: T): boolean;
 }
 
-export class GameObjectWithEvents<T> extends GameObject<T> {
-    private abortControllers: AbortController[] = [];
-    private mouseEvents?: Map<string, MouseCallbacks> = new Map();
-    canvas: HTMLCanvasElement | undefined
+export type WithEvents = {
+    events: Map<string, Callback>;
+    abortControllers: AbortController[];
+    addCallback<T extends EventType, K extends UIEvent>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<K>): void
+    enableEvent<T extends EventType>(eventType: T): (eventTarget: EventTarget) => void
+    removeCallback(id: string): void
+    deregisterEvents(): void
+}
 
-    /**
-     * args[0] : CanvasScene2d
-     */
-    init(ctx: T, ...args: any[]): void {
-        super.init(ctx, args);
-        this.canvas = args[0];
-    }
-
-    enableMouseEvent(mouseEventType: MouseEventType) {
-        if (this.canvas === undefined) {
-            throw new Error('canvas is undefined!');
+export function withEvents<T extends new (...args: any[]) => {}>(obj: T) {
+    return class extends obj implements WithEvents {
+        events = new Map();
+        abortControllers: AbortController[] = [];
+        addCallback<T extends EventType, K extends UIEvent>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<K>): void {
+            if (this.events?.has(id)) {
+                console.warn(`event with id ${id} already exists!`)
+                return;
+            }
+            this.events?.set(id, { eType: eventType, ev, triggerCondition });
+        }
+        removeCallback(id: string): void {
+            if (this.events?.has(id) === false) {
+                console.warn(`cannot remove ${id}, event not found!`);
+                return;
+            }
+            this.events?.delete(id)
+        }
+        deregisterEvents(): void {
+            this.abortControllers.forEach((ac) => ac.abort());
         }
 
-        const controller = this.abortControllers[this.abortControllers.push(new AbortController()) - 1];
-        this.canvas.addEventListener<MouseEventType>(mouseEventType, (ev: MouseEvent) => {
-            this.mouseEvents?.forEach((e) => {
-                if (e.eType !== mouseEventType || !e.triggerCondition(ev)) {
-                    return;
-                };
-                if (ev === undefined) {
-                    console.warn(`empty mouse event cannot be run!`);
-                    return;
+        enableEvent<T extends EventType>(eventType: T): (eventTarget: EventTarget) => void {
+            return (eventTarget: EventTarget) => {
+                if (eventTarget === undefined) {
+                    throw new Error('eventTarget is undefined!');
                 }
-                e.ev(ev.x, ev.y);
-            })
-        }, { signal: controller.signal })
-    };
-    addMouseCallback(eType: MouseEventType, id: string, ev: Callback, triggerCondition: TriggerCondition): void {
-        if (this.mouseEvents?.has(id)) {
-            console.warn(`Mouse event with id ${id} already exists!`)
-            return;
+                const controller = this.abortControllers[this.abortControllers.push(new AbortController()) - 1];
+                eventTarget.addEventListener(eventType, (ev: Event) => {
+                    this.events?.forEach((events) => {
+                        if (events.eType !== eventType || events.triggerCondition === undefined || events.triggerCondition(ev) === false) {
+                            return;
+                        };
+                        if (ev === undefined) {
+                            console.warn(`empty event cannot be run!`);
+                            return;
+                        }
+                        events.ev(ev);
+                    })
+                }, { signal: controller.signal })
+            }
         }
-        this.mouseEvents?.set(id, { eType, ev, triggerCondition });
-    }
-    removeMouseCallback(id: string) {
-        if (this.mouseEvents?.has(id) === false) {
-            console.warn(`cannot remove, mouse event with id ${id} not found!`);
-            return;
-        }
-        this.mouseEvents?.delete(id)
-    }
-    clean(...args: any): void {
-        this.abortControllers.forEach((ac) => ac.abort());
     }
 }

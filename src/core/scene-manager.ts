@@ -46,9 +46,6 @@ export class SceneManager implements SceneHandler {
 
         const loadPromise = this.scenes[i].init(this.ctx!);
 
-        // TODO: handle Deregistration of last scene user inputs (mouse and keybs)
-        //
-
         if (loadPromise !== undefined) {
             await loadPromise;
         }

@@ -6,7 +6,7 @@ export class Spinner extends GameObject<CanvasRenderingContext2D> {
     assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
     image: HTMLImageAsset | undefined;
     rotation = 0
-    speed = 0.2
+    speed = 0.1
 
     constructor() {
         super()
