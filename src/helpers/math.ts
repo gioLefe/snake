@@ -10,39 +10,9 @@ export function getVectorPerpendicular(axis: Vec2<number>): Vec2<number> | null 
     return { x: -axis.y, y: axis.x }
 }
 
-// Function to project a polygon onto a perpendicular axis
-export function projectPolygonToAxis(vertices: Vec2<number>[], axis: Vec2<number>): MinMax {
-    let min = Number.POSITIVE_INFINITY;
-    let max = Number.NEGATIVE_INFINITY;
-
-    // Loop through each vertex of the polygon
-    for (const vertice of vertices) {
-
-        // Project the vertex onto the axis using the dot product
-        const projection = vertice.x * axis.x + vertice.y * axis.y;
-
-        // Update the minimum and maximum projection values
-        if (projection < min) {
-            min = projection;
-        }
-        if (projection > max) {
-            max = projection;
-        }
-    }
-
-    // Return the min and max projections
-    return { min, max };
-}
-
-
-// Function to check for overlap between two projected intervals
-export function intervalsOverlap(interval1: MinMax, interval2: MinMax): boolean {
-    // If one interval is entirely to the left or right of the other, there is no overlap
-    if (interval1.max < interval2.min || interval2.max < interval1.min) {
-        return false;
-    }
-    // Otherwise, there is overlap
-    return true;
+/** Checks for overlap between tw intervalso */
+export function intervalsOverlap(intervalA: MinMax, intervalB: MinMax): boolean {
+    return !(intervalA.max < intervalB.min || intervalB.max < intervalA.min);
 }
 
 /**
@@ -69,12 +39,52 @@ export function createVector(direction: number, distance: number, origin?: Vec2<
     }
 }
 
-export function dotProduct(v1: Vec2<number>, v2: Vec2<number>): number {
-    return v1.x * v2.x + v1.y * v2.y;
+/**
+ * Calculates the dot product of two 2-dimensional vectors.
+ *
+ * @param {Vec2<number>} a - The first vector.
+ * @param {Vec2<number>} b - The second vector.
+ * @returns {number} The dot product of vectors a and b.
+ *
+ * @example
+ * // Define two vectors
+ * const vectorA = { x: 1, y: 2 };
+ * const vectorB = { x: 3, y: 4 };
+ *
+ * // Calculate the dot product
+ * const result = dotProduct(vectorA, vectorB);
+ * // result is 11 (1*3 + 2*4)
+ */
+export function dotProduct(a: Vec2<number>, b: Vec2<number>): number {
+    return a.x * b.x + a.y * b.y;
 }
 
 export function magnitude(v: Vec2<number>): number {
     return Math.sqrt(v.x * v.x + v.y * v.y);
+}
+
+/** Project a polygon onto an axis */
+export function projectPolygonToAxis(vertices: Vec2<number>[], axis: Vec2<number>): MinMax {
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+
+    // Loop through each vertex of the polygon
+    for (const vertice of vertices) {
+
+        // Project the vertex onto the axis using the dot product
+        const projection = dotProduct(vertice, axis)
+
+        // Update the minimum and maximum projection values
+        if (projection < min) {
+            min = projection;
+        }
+        if (projection > max) {
+            max = projection;
+        }
+    }
+
+    // Return the min and max projections
+    return { min, max };
 }
 
 export function angleBetween(v1: Vec2<number>, v2: Vec2<number>, tolerance: number = 1e-6): number {
@@ -98,4 +108,3 @@ export function angleBetween(v1: Vec2<number>, v2: Vec2<number>, tolerance: numb
 
     return angle;
 }
-

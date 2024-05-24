@@ -1,10 +1,43 @@
 import { CanvasScene2D } from "@octo/models";
 
+/**
+ * An interface representing a handler for managing scenes.
+ * 
+ * @interface SceneHandler
+ */
 export interface SceneHandler {
-    addScene(scene: CanvasScene2D): void
+    /**
+     * Adds a new scene.
+     * 
+     * @param {CanvasScene2D} scene - The scene to add.
+     * @returns {void}
+     */
+    addScene(scene: CanvasScene2D): void;
+
+    /**
+     * Deletes a scene by its ID.
+     * 
+     * @param {string} id - The ID of the scene to delete.
+     * @returns {void}
+     */
     deleteScene(id: string): void;
+
+    /**
+     * Gets the current scenes.
+     * 
+     * @returns {CanvasScene2D[] | undefined} The array of current scenes, or undefined if no scenes are present.
+     */
     getCurrentScenes(): CanvasScene2D[] | undefined;
-    changeScene(id: string, cleanPreviousState: boolean, loadingSceneId?: string): void
+
+    /**
+     * Changes the current scene to a new scene specified by the given ID.
+     * 
+     * @param {string} id - The ID of the new scene to transition to.
+     * @param {boolean} cleanPreviousState - A flag indicating whether to clean up the previous scene state.
+     * @param {string} [loadingSceneId] - The ID of an optional loading scene to display while the new scene is initializing.
+     * @returns {void}
+     */
+    changeScene(id: string, cleanPreviousState: boolean, loadingSceneId?: string): void;
 }
 
 export class SceneManager implements SceneHandler {
@@ -29,25 +62,35 @@ export class SceneManager implements SceneHandler {
         return this.currentScenes
     }
 
+    /**
+     * Changes the current scene to a new scene specified by the given ID.
+     *
+     * This function initializes the new scene, optionally initializes a loading scene, and updates
+     * the current scenes stack. It also handles cleaning up the previous scene state if specified.
+     *
+     * @param {string} id - The ID of the new scene to transition to.
+     * @param {boolean} [cleanPreviousState=true] - A flag indicating whether to clean up the previous scene state.
+     * @param {string} [loadingSceneId] - The ID of an optional loading scene to display while the new scene is initializing.
+     * @returns {Promise<void>} A promise that resolves when the scene transition is complete.
+     */
     async changeScene(id: string, cleanPreviousState: boolean = true, loadingSceneId?: string): Promise<void> {
-
         const lastCurrentSceneId = this.currentScenes[this.currentScenes.length - 1]?.id;
-        const i = this.getSceneIndex(id, this.scenes);
+        const newScene = this.scenes[this.getSceneIndex(id, this.scenes)]
 
         if (loadingSceneId !== undefined) {
             const loadingSceneIndex = this.getSceneIndex(loadingSceneId, this.scenes);
             let loadingScene: CanvasScene2D = this.scenes[loadingSceneIndex];
-            const loadingScenePromises = loadingScene.init(this.ctx!);
-            if (loadingScenePromises !== undefined) {
-                await loadingScenePromises
+            const loadingSceneInitPromises = loadingScene.init(this.ctx!);
+            if (loadingSceneInitPromises !== undefined) {
+                await loadingSceneInitPromises
             }
             this.currentScenes.push(loadingScene);
         }
 
-        const loadPromise = this.scenes[i].init(this.ctx!);
+        const newSceneInitPromises = newScene.init(this.ctx!);
 
-        if (loadPromise !== undefined) {
-            await loadPromise;
+        if (newSceneInitPromises !== undefined) {
+            await newSceneInitPromises;
         }
         if (cleanPreviousState && lastCurrentSceneId !== undefined) {
             this.deleteScene(lastCurrentSceneId);
@@ -55,8 +98,7 @@ export class SceneManager implements SceneHandler {
         if (loadingSceneId !== undefined) {
             this.deleteScene(loadingSceneId);
         }
-        this.currentScenes.push(this.scenes[i]);
-
+        this.currentScenes.push(newScene);
     }
 
     private getSceneIndex(id: string, scenes: CanvasScene2D[]) {
@@ -66,5 +108,4 @@ export class SceneManager implements SceneHandler {
         }
         return loadingSceneIndex;
     }
-
 }
