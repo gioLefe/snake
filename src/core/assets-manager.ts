@@ -19,37 +19,10 @@ export class AssetsManager implements AssetsHandler {
     }
 
     addImage(id: string, path: string): Promise<void> {
-        const assetManagerHandle = this;
-        const p = new Promise<void>(function (resolve, reject) {
-            const img = new Image();
-            img.onload = function () {
-                assetManagerHandle.assets.set(id, { img, tags: [] });
-                resolve()
-            }
-            img.onerror = function () {
-                reject(`cannot load ${id} at ${path}`);
-            }
-            img.src = path;
-        })
-        return p;
+        return this.addImagePromise(this, id, path);
     }
     addImages(images: AssetRequest[]): Promise<void>[] {
-        const handler = this;
-        const allPromises: Promise<void>[] = images.map(i =>
-            new Promise<void>(function (resolve, reject) {
-                const img = new Image();
-                img.onload = function () {
-                    handler.assets.set(i.id, { img, tags: [] });
-                    resolve();
-                }
-                img.onerror = function () {
-                    console.error(`cannot load ${i.id}`)
-                    reject()
-                }
-                img.src = i.path;
-            })
-        );
-        return allPromises;
+        return images.map(i => this.addImagePromise(this, i.id, i.path));
     }
 
     getImage(id: string): HTMLImageAsset | undefined {
@@ -70,5 +43,19 @@ export class AssetsManager implements AssetsHandler {
         }
         a.tags.push(tag);
         this.assets.set(id, a);
+    }
+
+    private addImagePromise(assetManagerHandle: this, id: string, path: string) {
+        return new Promise<void>(function (resolve, reject) {
+            const img = new Image();
+            img.onload = function () {
+                assetManagerHandle.assets.set(id, { img, tags: [] });
+                resolve();
+            };
+            img.onerror = function () {
+                reject(`cannot load ${id} at ${path}`);
+            };
+            img.src = path;
+        });
     }
 }
