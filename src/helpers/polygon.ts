@@ -1,6 +1,7 @@
-import { getVectorPerpendicular } from "helpers/math";
+import { getVectorPerpendicular } from "@octo/helpers";
 import { Polygon } from "../models/polygon";
 import { Vec2 } from "../models/vec";
+import { BoundingBox } from "@octo/models";
 
 export interface RenderingPolygonParams {
   strokeColor?: string;
@@ -118,6 +119,17 @@ export function rotatePolygon(polygon: Polygon, radiants: number): Polygon {
   }
 }
 
+export function calculateNormals(points: Vec2<number>[]) {
+  return calculateEdgesPerpendiculars(points)
+    .reduce((accumulation: Vec2<number>[], current: Vec2<number>) => {
+      return accumulation.some(
+        (n) => Math.abs(n.y) === Math.abs(current.y)
+          && Math.abs(n.x) === Math.abs(current.x))
+        ? accumulation
+        : accumulation.concat(current)
+    }, []);
+}
+
 export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<number>[] {
   const perpendiculars: Vec2<number>[] = [];
 
@@ -172,4 +184,22 @@ function generatePolygonPoints(
   }
 
   return points;
+}
+
+export function getBBoxRect(
+  buondingBox: BoundingBox<number>,
+  defaults: Partial<Polygon> = {}
+): Polygon {
+  return {
+    color: defaults.color ?? "#ffb3ba",
+    fill: defaults.fill ?? true,
+    outline: defaults.outline ?? true,
+    numSides: 4,
+    points: [
+      { x: buondingBox.nw.x, y: buondingBox.nw.y },
+      { x: buondingBox.se.x, y: buondingBox.nw.y },
+      { x: buondingBox.se.x, y: buondingBox.se.y },
+      { x: buondingBox.nw.x, y: buondingBox.se.y },
+    ],
+  } as Polygon;
 }

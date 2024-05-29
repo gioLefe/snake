@@ -1,4 +1,4 @@
-import { angleBetween, createVector, renderPolygon, toPrecisionNumber } from "@octo/helpers";
+import { angleBetween, createVector, toPrecisionNumber } from "@octo/helpers";
 import { GameObject, LinkedList, Vec2 } from "@octo/models";
 import { DEFAULT_POLYGON_SIZE } from "snake/constants";
 import { Pivot, pivotComparator } from "../../models/pivot";
@@ -15,12 +15,12 @@ export type SteerDirection = {
     'Right': 2
 }
 
-const DEBUG = true;
+const DEBUG = false;
 
 export class Snake extends GameObject<CanvasRenderingContext2D> {
     id: string;
-    private readonly BIT_DISTANCE = 7;
-    private length: number = 100;
+    private readonly BIT_DISTANCE = 14;
+    private length: number = 10;
     private direction: number = Math.random() % (Math.PI * 2);
     private segments: Segment[] = []
     private turboSpeed: number = 4
@@ -41,7 +41,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         if (args?.initialDirection) {
             this.direction = args.initialDirection
         }
-        this.segments[0] = new Segment(this.direction, false, this, args.worldCoordinates, {
+        if (args?.length) {
+            this.length = args.length
+        }
+        this.segments[0] = new Segment(this.direction, false, this.popPivot, args.worldCoordinates, {
             sideLength: DEFAULT_POLYGON_SIZE,
             numSides: 10,
             color: "#86a04e",
@@ -56,10 +59,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             this.segments[i] = new Segment(
                 this.direction,
                 i === this.length - 1,
-                this,
+                this.popPivot,
                 {
-                    x: previousBit.getPosition().x + this.getSpeed() * Math.cos(tailDirection) * this.BIT_DISTANCE,
-                    y: previousBit.getPosition().y + this.getSpeed() * Math.sin(tailDirection) * this.BIT_DISTANCE
+                    x: previousBit.getPosition().x + Math.cos(tailDirection) * this.BIT_DISTANCE,
+                    y: previousBit.getPosition().y + Math.sin(tailDirection) * this.BIT_DISTANCE
                 },
                 {
                     sideLength: this.calcPolygonSize(i, this.length),
@@ -109,15 +112,17 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     }
 
     steer(radiants: number) {
+        const headBit = this.segments[0]
+
         // Use % PI*2 to simplify the direction number
         this.direction = (this.direction + radiants) % (Math.PI * 2);
-        this.segments[0].setDirection(this.direction);
-        this.segments[0].rotate(this.direction);
+        headBit.setDirection(this.direction);
+        headBit.rotate(this.direction);
 
-        const sPos = this.segments[0].getPosition()
+        const sPos = headBit.getPosition()
         const pivot: Pivot = { position: { x: sPos.x, y: sPos.y }, direction: this.direction };
         const nodePivot = this.pivots.append(pivot);
-        for (let i = 1; i < this.length; i++) {
+        for (let i = 1; i < this.segments.length; i++) {
             if (this.segments[i].getNextPivot() === undefined) {
                 this.segments[i].setNextPivot(nodePivot)
             }
@@ -139,7 +144,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     getSpeed(): number {
         return this.turbonOn ? this.turboSpeed : this.speed
     }
-    popPivot(): Pivot | undefined {
+    getHeadSize(): number {
+        return this.segments[0].getSideLength()
+    }
+    popPivot = (): Pivot | undefined => {
         if (this.pivots.size()) {
             const pivot = this.pivots.head;
             if (pivot !== null) {
@@ -148,6 +156,32 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             return pivot?.data
         }
         return undefined
+    }
+    addSegment() {
+        this.length = this.length + 1
+        const previousBit = this.segments[this.segments.length - 1]
+        previousBit.setTail(false);
+
+        const tailDirection: number = previousBit.getDirection() + Math.PI;
+
+        const newSegmentIndex = this.segments.push(new Segment(
+            previousBit.getDirection(),
+            true,
+            this.popPivot,
+            {
+                x: previousBit.getPosition().x + Math.cos(tailDirection) * this.BIT_DISTANCE,
+                y: previousBit.getPosition().y + Math.sin(tailDirection) * this.BIT_DISTANCE
+            },
+            {
+                sideLength: this.calcPolygonSize(this.segments.length + 1, this.length),
+                numSides: 10,
+                color: "#576c1a",
+                outline: true
+            }))
+        const newBit = this.segments[newSegmentIndex - 1]
+        newBit.setNextPivot(previousBit.getNextPivot());
+        newBit.setTail(true);
+        newBit.init(this.ctx!)
     }
 
     private calcHeadTargetAngle(point: Vec2<number> | undefined): number {
@@ -224,5 +258,9 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         ctx.stroke();
         ctx.closePath();
 
+    }
+
+    static isSnake(obj: any): obj is Snake {
+        return obj && typeof obj.speed === 'number' && typeof obj.length === 'number';
     }
 }

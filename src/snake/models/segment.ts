@@ -1,6 +1,5 @@
 import { createPolygon, createVector, diffVectors, renderPolygon, rotatePolygon } from "@octo/helpers";
 import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
-import { Snake } from "./";
 
 export class Segment extends GameObject<CanvasRenderingContext2D> {
     polygon: Polygon = {
@@ -10,13 +9,13 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     };
     private direction: number = 0;
     private nextPivot: LinkedListNode<Pivot> | undefined;
-    private snake: Snake;
+    private popPivotFn: () => Pivot | undefined;
     private isTail = false;
     private position: Vec2<number> = { x: 0, y: 0 };
 
-    constructor(direction: number, isTail = false, snake: Snake, worldPosition?: Vec2<number>, polygonOptions?: Partial<Polygon>) {
+    constructor(direction: number, isTail = false, popPivotFn: () => Pivot | undefined, worldPosition?: Vec2<number>, polygonOptions?: Partial<Polygon>) {
         super();
-        this.snake = snake
+        this.popPivotFn = popPivotFn
         this.isTail = isTail
         this.direction = direction;
         this.position = worldPosition ?? { x: 0, y: 0 };
@@ -66,7 +65,7 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     }
 
     popPivot(): Pivot | undefined {
-        return this.snake.popPivot()
+        return this.popPivotFn()
     }
     setNextPivot(pivot: LinkedListNode<Pivot> | undefined) {
         this.nextPivot = pivot
@@ -80,6 +79,10 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     }
     rotate(radiants: number): void {
         this.polygon = rotatePolygon(this.polygon, radiants)
+    }
+
+    getSideLength(): number {
+        return this.polygon.sideLength
     }
 
     private moveToNextPosition(distance: number): void {

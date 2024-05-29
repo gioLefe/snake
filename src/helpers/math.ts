@@ -108,3 +108,7 @@ export function angleBetween(v1: Vec2<number>, v2: Vec2<number>, tolerance: numb
 
     return angle;
 }
+
+export function randomIntFromInterval(min: number, max: number) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}

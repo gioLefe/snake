@@ -12,7 +12,6 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     private outline: boolean = true;
     private fillStyle: FillStrokeStyle = "#000";
     private strokeStyle: FillStrokeStyle = "#000"
-    private bbox: BoundingBox<number> = { nw: { x: 0, y: 0 }, se: { x: 0, y: 0 } };
 
     constructor(id: string, posX: number, posY: number, textStyle?: Partial<CanvasTextDrawingStyles>, text?: string) {
         super();

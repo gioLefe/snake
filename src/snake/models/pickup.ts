@@ -1,7 +1,22 @@
 import { GameObject, Vec2 } from "@octo/models";
 
 export abstract class Pickup extends GameObject<CanvasRenderingContext2D> {
+    protected width: number = 64
+    protected height: number = 64
     protected position: Vec2<number> | undefined;
+
+    getWidth(): number {
+        return this.width
+    }
+    setWidth(width: number) {
+        this.width = width;
+    }
+    getHeight(): number {
+        return this.height
+    }
+    setHeight(height: number) {
+        this.height = height;
+    }
 
     onPickup(...args: any): any { }
     getPosition(): Vec2<number> | undefined {
