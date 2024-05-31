@@ -23,8 +23,8 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     private length: number = 10;
     private direction: number = Math.random() % (Math.PI * 2);
     private segments: Segment[] = []
-    private turboSpeed: number = 4
-    private speed: number = 2
+    private turboSpeed: number = 200
+    private speed: number = 100
     private turbonOn: boolean = false;
 
     private maxSteerAngle = 0.1
@@ -100,14 +100,14 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             this.steer(steerAngle);
         }
 
-        const headDistanceDelta: Vec2<number> = createVector(this.direction, speed)
+        const headDistanceDelta: Vec2<number> = createVector(this.direction, speed * deltaTime)
         head.setPosition({
             x: head.getPosition().x + headDistanceDelta.x,
             y: head.getPosition().y + headDistanceDelta.y
         })
 
         for (let i = 1; i < this.length; i++) {
-            this.segments[i].update(deltaTime, speed)
+            this.segments[i].update(deltaTime, speed * deltaTime)
         }
     }
 

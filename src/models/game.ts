@@ -83,7 +83,7 @@ export abstract class Game implements GameCycle<CanvasRenderingContext2D> {
         const elapsed = timestamp - this.lastUpdateTime;
 
         if (elapsed > this.frameInterval) {
-            this.deltaTime = (timestamp - this.lastUpdateTime) / 1000; // Convert to seconds
+            this.deltaTime = elapsed / 1000; // Convert to 
             this.lastUpdateTime = timestamp;
 
             this.update(this.deltaTime);

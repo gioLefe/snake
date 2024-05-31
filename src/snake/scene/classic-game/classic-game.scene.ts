@@ -31,7 +31,7 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
         super()
         this.ctx = ctx
         this.canvas = canvas
-        this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y }, length: 4 });
+        this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y }, length: 5 });
     }
 
     init(): Promise<any> {
@@ -80,8 +80,8 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
         const headSideLength = this.playerSnake.getHeadSize();
         const headDistanceDelta: Vec2<number> = createVector(this.playerSnake.getDirection(), this.playerSnake.getSpeed());
         const snakeNextPos = {
-            x: this.playerSnake.getHeadPos().x + headDistanceDelta.x,
-            y: this.playerSnake.getHeadPos().y + headDistanceDelta.y
+            x: this.playerSnake.getHeadPos().x + headDistanceDelta.x * deltaTime,
+            y: this.playerSnake.getHeadPos().y + headDistanceDelta.y * deltaTime
         };
 
         // - Food
