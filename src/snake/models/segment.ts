@@ -1,5 +1,5 @@
 import { createPolygon, createVector, diffVectors, renderPolygon, rotatePolygon } from "@octo/helpers";
-import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
+import { GameObject, GraphicContext, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
 
 export class Segment extends GameObject<CanvasRenderingContext2D> {
     polygon: Polygon = {
@@ -13,8 +13,8 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     private isTail = false;
     private position: Vec2<number> = { x: 0, y: 0 };
 
-    constructor(direction: number, isTail = false, popPivotFn: () => Pivot | undefined, worldPosition?: Vec2<number>, polygonOptions?: Partial<Polygon>) {
-        super();
+    constructor(ctx: CanvasRenderingContext2D, direction: number, isTail = false, popPivotFn: () => Pivot | undefined, worldPosition?: Vec2<number>, polygonOptions?: Partial<Polygon>) {
+        super(ctx);
         this.popPivotFn = popPivotFn
         this.isTail = isTail
         this.direction = direction;
@@ -27,8 +27,8 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
         })
         this.rotate(this.direction)
     }
-    init(ctx: CanvasRenderingContext2D, ...args: any) {
-        super.init(ctx, args)
+    init( ...args: any) {
+        super.init( args)
     }
     render(...args: any): void {
         super.render(args);

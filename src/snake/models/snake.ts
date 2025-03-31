@@ -23,8 +23,8 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     private length: number = 10;
     private direction: number = Math.random() % (Math.PI * 2);
     private segments: Segment[] = []
-    private turboSpeed: number = 200
-    private speed: number = 100
+    private turboSpeed: number = 500
+    private speed: number = 250
     private turbonOn: boolean = false;
 
     private maxSteerAngle = 0.1
@@ -32,31 +32,30 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
 
     private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
 
-    constructor(id: string) {
-        super()
+    constructor(ctx: CanvasRenderingContext2D, id: string) {
+        super(ctx)
         this.id = id;
     }
-    init(ctx: CanvasRenderingContext2D, args: SnakeInitParam) {
-        this.ctx = ctx
+    init(args: SnakeInitParam) {
         if (args?.initialDirection) {
             this.direction = args.initialDirection
         }
         if (args?.length) {
             this.length = args.length
         }
-        this.segments[0] = new Segment(this.direction, false, this.popPivot, args.worldCoordinates, {
+        this.segments[0] = new Segment(this.ctx, this.direction, false, this.popPivot, args.worldCoordinates, {
             sideLength: DEFAULT_POLYGON_SIZE,
             numSides: 10,
             color: "#86a04e",
             outline: true
         });
-        this.segments[0].init(ctx);
 
         for (let i = 1; i < (args.length ?? this.length); i++) {
             const previousBit: Segment = this.segments[i - 1]
             const tailDirection: number = this.direction + Math.PI
 
             this.segments[i] = new Segment(
+                this.ctx,
                 this.direction,
                 i === this.length - 1,
                 this.popPivot,
@@ -70,7 +69,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
                     color: "#576c1a",
                     outline: true
                 });
-            this.segments[i].init(ctx)
+            this.segments[i].init()
         }
     }
     clean(...args: any) {
@@ -82,7 +81,9 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             this.segments[i].render();
         }
 
-        if (DEBUG) { this.renderDebug(this.ctx!) }
+        if (DEBUG) {
+            this.renderDebug(this.ctx)
+        }
     }
     update(deltaTime: number, ...args: any) {
         super.update(deltaTime, args)
@@ -165,6 +166,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         const tailDirection: number = previousBit.getDirection() + Math.PI;
 
         const newSegmentIndex = this.segments.push(new Segment(
+            this.ctx,
             previousBit.getDirection(),
             true,
             this.popPivot,

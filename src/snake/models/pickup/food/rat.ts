@@ -12,12 +12,10 @@ export class Rat extends Food {
     resReady = false
     assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
-
-
     private bboxPolygon: Polygon | undefined
 
-    constructor(id: string, width?: number, height?: number, worldCoordinates?: Vec2<number>) {
-        super(id);
+    constructor(ctx: CanvasRenderingContext2D, id: string, width?: number, height?: number, worldCoordinates?: Vec2<number>) {
+        super(ctx, id);
         this.position = worldCoordinates;
         this.image = this.assetsManager.getImage('rat');
         this.width = width ? width : this.image ? this.image.img.width : 0;
@@ -31,7 +29,7 @@ export class Rat extends Food {
         }
         snake.addSegment();
 
-        // TODO Pickup aftermaths: Play sound, graphic effects, etc.
+        // TODO trigger side effects: Play sound, graphic effects, etc.
     }
 
     init(ctx: CanvasRenderingContext2D, ...args: any): void {

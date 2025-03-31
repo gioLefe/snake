@@ -27,8 +27,8 @@ export abstract class Pickup extends GameObject<CanvasRenderingContext2D> {
 export abstract class PickupItem extends Pickup {
     id: string = '';
 
-    constructor() {
-        super()
+    constructor(ctx: CanvasRenderingContext2D) {
+        super(ctx)
     }
     init(ctx: CanvasRenderingContext2D, ...args: any) {
         super.init(ctx, args)

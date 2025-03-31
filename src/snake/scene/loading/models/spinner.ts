@@ -8,13 +8,12 @@ export class Spinner extends GameObject<CanvasRenderingContext2D> {
     rotation = 0
     speed = 0.1
 
-    constructor() {
-        super()
+    constructor(ctx: CanvasRenderingContext2D) {
+        super(ctx)
     }
 
-    init(ctx: CanvasRenderingContext2D) {
-        super.init(ctx);
-        this.ctx = ctx;
+    init() {
+        super.init();
         this.image = this.assetsManager.getImage('spinner');
     }
 

@@ -13,7 +13,7 @@ export const CLASSIC_GAME_IMAGE_ASSETS: { id: string, path: string }[] = [
 ]
 
 export function initSnake(ctx: CanvasRenderingContext2D, options?: SnakeInitParam): Snake {
-    const snake = new Snake('player');
-    snake.init(ctx, options ?? {})
+    const snake = new Snake(ctx,'player');
+    snake.init(options ?? {})
     return snake;
 }

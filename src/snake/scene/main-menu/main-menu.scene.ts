@@ -6,22 +6,22 @@ export const MAIN_MENU_SCENE_ID = 'main-menu';
 
 export class MainMenuScene implements CanvasScene2D {
     id: string = MAIN_MENU_SCENE_ID;
-    canvas: HTMLCanvasElement | undefined;
-    ctx: CanvasRenderingContext2D | undefined;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
 
     // UI
-    title: UILabel | undefined
-    playBtn: UILabel | undefined
+    title: UILabel;
+    playBtn: UILabel;
     allImagesPromises: Promise<void>[] = [];
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
         this.canvas = canvas;
-        this.title = new UILabel('', this.canvas?.width / 2 - 100, 60, { font: "48px Verdana" }, 'SeRPeNT');
+        this.title = new UILabel(this.ctx, '', this.canvas?.width / 2 - 100, 60, { font: "48px Verdana" }, 'SeRPeNT');
         this.title.setFillStyle("#aFF");
         this.title.setStrokeStyle("#32FFaF");
 
-        this.playBtn = new PlayBtn('', this.canvas?.width / 2 - 50, this.canvas?.height / 2, { font: '48px Verdana' }, 'PLAY');
+        this.playBtn = new PlayBtn(this.ctx, '', this.canvas?.width / 2 - 50, this.canvas?.height / 2, { font: '48px Verdana' }, 'PLAY');
         this.playBtn.setFillStyle("#204Fa1");
         this.playBtn.setStrokeStyle("#00FFad");
     }
@@ -42,13 +42,6 @@ export class MainMenuScene implements CanvasScene2D {
         this.playBtn?.update(deltaTime)
     }
     render(...args: any) {
-        if (this.canvas === undefined || this.canvas === null) {
-            throw Error('canvas is undefined')
-        }
-        if (!this.ctx) {
-            throw Error('ctx (CanvasRenderingContext2D) is not defined')
-        }
-
         // Apply background color
         this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)

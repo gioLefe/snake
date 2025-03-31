@@ -16,8 +16,8 @@ const FOOD_SIZE = 24;
 
 export class ClassicGameScene extends withEvents(class { }) implements CanvasScene2D {
     id: string = CLASSIC_GAME_SCENE_ID;
-    canvas: HTMLCanvasElement | undefined;
-    ctx: CanvasRenderingContext2D | undefined;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
     assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
     playerSnake: Snake | undefined = undefined;
@@ -69,7 +69,7 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
 
         // Spawn rats
         while (this.pickups.length < 5) {
-            const rat = new Rat('rat', FOOD_SIZE, FOOD_SIZE, this.calcRandomPosition(1024, 768, { min: FOOD_SIZE, max: FOOD_SIZE }, { min: FOOD_SIZE, max: FOOD_SIZE }))
+            const rat = new Rat(this.ctx, 'rat', FOOD_SIZE, FOOD_SIZE, this.calcRandomPosition(1024, 768, { min: FOOD_SIZE, max: FOOD_SIZE }, { min: FOOD_SIZE, max: FOOD_SIZE }))
             this.pickups.push(rat);
             if (this.ctx !== undefined) {
                 rat.init(this.ctx)

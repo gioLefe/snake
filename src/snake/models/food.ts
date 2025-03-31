@@ -1,8 +1,8 @@
 import { PickupItem } from "./";
 
 export class Food extends PickupItem {
-    constructor(id: string) {
-        super();
+    constructor(ctx: CanvasRenderingContext2D, id: string) {
+        super(ctx);
         this.id = id;
     }
     id: string;

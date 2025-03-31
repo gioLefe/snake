@@ -1,29 +1,30 @@
 import { AssetsHandler, DIContainer } from "@octo/core";
-import { ASSETS_MANAGER_DI, CanvasScene2D } from "@octo/models";
+import { ASSETS_MANAGER_DI, CanvasScene2D, GameObject } from "@octo/models";
 import { Spinner } from "./models/";
 
 export const LOADING_SCENE_SCENE_ID = 'loading';
 export const LOADING_IMAGE_ASSETS: { id: string, path: string }[] = [
-    { id: 'spinner', path: '/images/spritesheets/octo.png' }
+    { id: 'spinner', path: '/images/spritesheets/spinner.gif' }
 ]
 
 export class LoadingScene implements CanvasScene2D {
     id: string = LOADING_SCENE_SCENE_ID;
     canvas: HTMLCanvasElement | undefined;
-    ctx: CanvasRenderingContext2D | undefined;
+    ctx: CanvasRenderingContext2D;
 
     assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
     // UI components
-    spinner = new Spinner()
+    spinner: GameObject;
 
     constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
         this.ctx = ctx;
+        this.spinner = new Spinner(this.ctx)
         this.canvas = canvas;
     }
     allImagesPromises: Promise<void>[] = [];
 
-    init(ctx: CanvasRenderingContext2D, ...args: any) {
+    init(...args: any) {
         LOADING_IMAGE_ASSETS.forEach((i) => {
             this.allImagesPromises.push(
                 new Promise(

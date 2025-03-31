@@ -13,8 +13,8 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     private fillStyle: FillStrokeStyle = "#000";
     private strokeStyle: FillStrokeStyle = "#000"
 
-    constructor(id: string, posX: number, posY: number, textStyle?: Partial<CanvasTextDrawingStyles>, text?: string) {
-        super();
+    constructor(ctx: CanvasRenderingContext2D, id: string, posX: number, posY: number, textStyle?: Partial<CanvasTextDrawingStyles>, text?: string) {
+        super(ctx);
         this.id = id;
         this.position = { x: posX, y: posY }
         if (textStyle !== undefined) {
