@@ -20,7 +20,7 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
     ctx: CanvasRenderingContext2D;
     assetsManager = DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
-    playerSnake: Snake | undefined = undefined;
+    playerSnake: Snake;
     pickups: Pickup[] = [];
     allImagesPromises: Promise<void>[] = [];
 
@@ -34,22 +34,18 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
         this.playerSnake = initSnake(ctx, { worldCoordinates: { x: initialWorldCoordinates.x, y: initialWorldCoordinates.y }, length: 5 });
     }
 
-    init(): Promise<any> {
-        if (this.playerSnake === undefined) {
-            throw Error('player snake is not defined')
-        }
-
-        this.addCallback("mousemove", MOUSE_MOVE_EVENT_ID, (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake!), () => true)
-        this.enableEvent('mousemove')(this.canvas!);
-        this.addCallback("keydown", KEY_DOWN_EVENT_ID, (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake!), () => true)
+    async init(): Promise<any> {
+        this.addCallback("mousemove", MOUSE_MOVE_EVENT_ID, (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake), () => true)
+        this.enableEvent('mousemove')(this.canvas);
+        this.addCallback("keydown", KEY_DOWN_EVENT_ID, (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake), () => true)
         this.enableEvent('keydown')(window);
-        this.addCallback("keyup", KEY_UP_EVENT_ID, (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake!), () => true)
+        this.addCallback("keyup", KEY_UP_EVENT_ID, (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake), () => true)
         this.enableEvent('keyup')(window);
 
         CLASSIC_GAME_IMAGE_ASSETS.forEach((i) => {
             this.allImagesPromises.push(
                 new Promise(
-                    async (resolve, reject) => {
+                    async (resolve) => {
                         await this.assetsManager.addImage(i.id, i.path);
                         // TODO: move resolve outside the timeout and remove timeout, it is just for test purposes
                         // setTimeout(() => resolve(), 3000);
@@ -57,23 +53,22 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
                     }
                 ))
         })
-        return Promise.all(this.allImagesPromises).then((r) => r).catch((reason) => {
-            console.error(reason)
-        });
+        try {
+            const r = await Promise.all(this.allImagesPromises);
+            return r;
+        } catch (reason) {
+            console.error(reason);
+        }
     }
 
     update(deltaTime: number): void {
-        if (this.playerSnake === undefined) {
-            throw new Error('Player snake is undefined!')
-        }
+        const perfStart = performance.now();
 
         // Spawn rats
         while (this.pickups.length < 5) {
             const rat = new Rat(this.ctx, 'rat', FOOD_SIZE, FOOD_SIZE, this.calcRandomPosition(1024, 768, { min: FOOD_SIZE, max: FOOD_SIZE }, { min: FOOD_SIZE, max: FOOD_SIZE }))
             this.pickups.push(rat);
-            if (this.ctx !== undefined) {
-                rat.init(this.ctx)
-            }
+            rat.init(this.ctx)
         }
 
         // Collision detection
@@ -102,16 +97,12 @@ export class ClassicGameScene extends withEvents(class { }) implements CanvasSce
         });
 
         this.playerSnake.update(deltaTime);
+
+        const perfEnd = performance.now();
+        console.log(`%c* snake update time (ms): `, `background:rgb(1,1,0); color:rgb(255, 121, 61)`, (perfEnd - perfStart).toPrecision(2))
     }
 
     render(): void {
-        if (this.canvas === undefined) {
-            throw Error('canvas is undefined')
-        }
-        if (!this.ctx) {
-            throw Error('ctx (CanvasRenderingContext2D) is not defined')
-        }
-
         // Apply background color
         this.ctx.fillStyle = CANVAS_BG_COLOR;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)

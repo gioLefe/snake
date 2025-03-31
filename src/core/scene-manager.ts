@@ -1,44 +1,5 @@
 import { CanvasScene2D } from "@octo/models";
-
-/**
- * An interface representing a handler for managing scenes.
- * 
- * @interface SceneHandler
- */
-export interface SceneHandler {
-    /**
-     * Adds a new scene.
-     * 
-     * @param {CanvasScene2D} scene - The scene to add.
-     * @returns {void}
-     */
-    addScene(scene: CanvasScene2D): void;
-
-    /**
-     * Deletes a scene by its ID.
-     * 
-     * @param {string} id - The ID of the scene to delete.
-     * @returns {void}
-     */
-    deleteScene(id: string): void;
-
-    /**
-     * Gets the current scenes.
-     * 
-     * @returns {CanvasScene2D[] | undefined} The array of current scenes, or undefined if no scenes are present.
-     */
-    getCurrentScenes(): CanvasScene2D[] | undefined;
-
-    /**
-     * Changes the current scene to a new scene specified by the given ID.
-     * 
-     * @param {string} id - The ID of the new scene to transition to.
-     * @param {boolean} cleanPreviousState - A flag indicating whether to clean up the previous scene state.
-     * @param {string} [loadingSceneId] - The ID of an optional loading scene to display while the new scene is initializing.
-     * @returns {void}
-     */
-    changeScene(id: string, cleanPreviousState: boolean, loadingSceneId?: string): void;
-}
+import { SceneHandler } from "@octo/core";
 
 export class SceneManager implements SceneHandler {
     private currentScenes: CanvasScene2D[] = [];
@@ -56,7 +17,7 @@ export class SceneManager implements SceneHandler {
     deleteScene(id: string): void {
         const i = this.getSceneIndex(id, this.currentScenes)
         this.currentScenes[i].clean();
-        this.currentScenes = this.currentScenes.filter((s, index) => index !== i)
+        this.currentScenes = this.currentScenes.filter((_, index) => index !== i)
     }
     getCurrentScenes(): CanvasScene2D[] | undefined {
         return this.currentScenes
@@ -80,7 +41,7 @@ export class SceneManager implements SceneHandler {
         if (loadingSceneId !== undefined) {
             const loadingSceneIndex = this.getSceneIndex(loadingSceneId, this.scenes);
             let loadingScene: CanvasScene2D = this.scenes[loadingSceneIndex];
-            const loadingSceneInitPromises = loadingScene.init(this.ctx!);
+            const loadingSceneInitPromises = loadingScene.init();
             if (loadingSceneInitPromises !== undefined) {
                 await loadingSceneInitPromises
             }

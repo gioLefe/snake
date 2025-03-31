@@ -1,5 +1,5 @@
 import { createPolygon, createVector, diffVectors, renderPolygon, rotatePolygon } from "@octo/helpers";
-import { GameObject, GraphicContext, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
+import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
 
 export class Segment extends GameObject<CanvasRenderingContext2D> {
     polygon: Polygon = {

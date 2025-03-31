@@ -1,37 +1,39 @@
 
 export type EventType = keyof HTMLElementEventMap
 
-export type TriggerCondition<T extends UIEvent> = (ev: T) => boolean;
+export type TriggerCondition<T extends Event> = (ev: T) => boolean;
 
 export type Callback = {
     eType: EventType;
-    ev: Function,
-    triggerCondition?<T extends UIEvent>(ev: T): boolean;
+    ev: Function;
+    triggerCondition?: TriggerCondition<Event>;
 }
 
 export type WithEvents = {
     events: Map<string, Callback>;
     abortControllers: AbortController[];
-    addCallback<T extends EventType, K extends UIEvent>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<K>): void
+    addCallback<T extends EventType>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<Event>): void
     enableEvent<T extends EventType>(eventType: T): (eventTarget: EventTarget) => void
     removeCallback(id: string): void
     deregisterEvents(): void
 }
 
+type AnonymousClass<Mixin> = new (...args: any[]) => {} & Mixin
+
 /**
  * A mixin function that adds event handling capabilities to a class.
  *
  * @template T
- * @param {T} obj - The class to extend with event handling capabilities.
- * @returns {T & WithEvents} A new class that extends the original class with event handling capabilities.
+ * @param {T extends AnonymousClass<unknown>} obj - The class to extend with event handling capabilities.
+ * @returns {AnonymousClass<WithEvents>} A new class that extends the original class with event handling capabilities.
  */
-export function withEvents<T extends new (...args: any[]) => {}>(obj: T) {
+export function withEvents<T extends AnonymousClass<unknown>>(obj: T): AnonymousClass<WithEvents> {
     return class extends obj implements WithEvents {
         /**
          * A map to store event callbacks by their ID.
-         * @type {Map<string, { eType: EventType, ev: Function, triggerCondition?: TriggerCondition<UIEvent> }>}
+         * @type {Map<string, Callback>}
          */
-        events = new Map();
+        events: Map<string, Callback> = new Map();
 
         /**
          * A list of AbortController instances to manage event listeners.
@@ -43,14 +45,13 @@ export function withEvents<T extends new (...args: any[]) => {}>(obj: T) {
          * Adds a callback for a specific event type and ID.
          *
          * @template T
-         * @template K
          * @param {T} eventType - The type of the event.
          * @param {string} id - The ID of the event callback.
          * @param {Function} ev - The callback function for the event.
          * @param {TriggerCondition<K>} [triggerCondition] - An optional condition that must be met for the event to trigger the callback.
          * @returns {void}
          */
-        addCallback<T extends EventType, K extends UIEvent>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<K>): void {
+        addCallback<T extends EventType>(eventType: T, id: string, ev: Function, triggerCondition?: TriggerCondition<Event>): void {
             if (this.events?.has(id)) {
                 console.warn(`event with id ${id} already exists!`);
                 return;

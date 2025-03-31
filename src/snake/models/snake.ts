@@ -27,7 +27,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     private speed: number = 250
     private turbonOn: boolean = false;
 
-    private maxSteerAngle = 0.1
+    private maxSteerAngle = 0.3
     private targetPoint: Vec2<number> | undefined = undefined;
 
     private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
