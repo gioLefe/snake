@@ -65,13 +65,15 @@ export class Rat extends Food {
         this.bboxPolygon?.points[0].x,
         this.bboxPolygon?.points[0].y,
       );
-      this.ctx.strokeStyle = "#000";
-      this.ctx.beginPath();
-      this.bboxPolygon.points.forEach((p) => {
-        this.ctx!.lineTo(p.x, p.y);
-      });
-      this.ctx.closePath();
-      this.ctx.stroke();
+
+      // DEBUG BOUNDING BOX
+      // this.ctx.strokeStyle = "#000";
+      // this.ctx.beginPath();
+      // this.bboxPolygon.points.forEach((p) => {
+      //   this.ctx!.lineTo(p.x, p.y);
+      // });
+      // this.ctx.closePath();
+      // this.ctx.stroke();
     }
   }
 

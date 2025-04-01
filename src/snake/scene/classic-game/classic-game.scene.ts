@@ -18,9 +18,8 @@ const KEY_UP_EVENT_ID = "ClassicGameScene-keyup";
 const FOOD_SIZE = 24;
 
 export class ClassicGameScene
-  extends withEvents(class {})
-  implements CanvasScene2D
-{
+  extends withEvents(class { })
+  implements CanvasScene2D {
   id: string = CLASSIC_GAME_SCENE_ID;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -93,8 +92,6 @@ export class ClassicGameScene
   }
 
   update(deltaTime: number): void {
-    const perfStart = performance.now();
-
     // Spawn rats
     while (this.pickups.length < 5) {
       const rat = new Rat(
@@ -124,6 +121,10 @@ export class ClassicGameScene
       y: this.playerSnake.getHeadPos().y + headDistanceDelta.y * deltaTime,
     };
 
+    // - Snake colliding with itself
+
+    // - Snake colliding with screen borders
+
     // - Food
     this.pickups.forEach((pickup, i) => {
       const pickupPos = pickup.getPosition();
@@ -145,13 +146,6 @@ export class ClassicGameScene
     });
 
     this.playerSnake.update(deltaTime);
-
-    const perfEnd = performance.now();
-    console.log(
-      `%c* snake update time (ms): `,
-      `background:rgb(1,1,0); color:rgb(255, 121, 61)`,
-      (perfEnd - perfStart).toPrecision(2),
-    );
   }
 
   render(): void {
@@ -179,7 +173,7 @@ export class ClassicGameScene
 
   private mouseMove = (ev: MouseEvent) => {
     return (snake: Snake) => {
-      snake.steerTo({ x: ev.x, y: ev.y });
+      snake.steerTo({ x: ev.offsetX, y: ev.offsetY });
     };
   };
 

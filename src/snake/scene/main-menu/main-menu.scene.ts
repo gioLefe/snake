@@ -28,6 +28,7 @@ export class MainMenuScene implements CanvasScene2D {
     this.title.setFillStyle("#aFF");
     this.title.setStrokeStyle("#32FFaF");
 
+    console.log(`%c x:${this.canvas?.width / 2 - 50}; y:${this.canvas?.height / 2}`, `background:rgb(1,1,0); color:rgb(149, 210, 70)`,)
     this.playBtn = new PlayBtn(
       this.ctx,
       "",
@@ -40,9 +41,9 @@ export class MainMenuScene implements CanvasScene2D {
     this.playBtn.setStrokeStyle("#00FFad");
   }
 
-  init(ctx: CanvasRenderingContext2D): void {
-    this.title?.init(ctx);
-    this.playBtn?.init(ctx, this.canvas);
+  init(): void {
+    this.title?.init();
+    this.playBtn?.init(this.canvas);
 
     // TODO Fix the repositioning of the title
     // const titleMetrics = this.title.getSize();

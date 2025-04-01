@@ -4,7 +4,7 @@ import { FillStrokeStyle, getTextBBox } from "@octo/ui/canvas";
 export class UILabel extends GameObject<CanvasRenderingContext2D> {
   id: string | undefined;
   private position: Vec2<number> | undefined;
-  private text: string | undefined;
+  private text: string;
 
   private textMetric: TextMetrics | undefined;
   private textStyle: CanvasTextDrawingStyles = this.defaultTextStyle();
@@ -27,20 +27,21 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     if (textStyle !== undefined) {
       this.textStyle = { ...this.textStyle, ...textStyle };
     }
-    this.text = text;
+    this.text = text ?? "";
   }
 
-  init(ctx: CanvasRenderingContext2D, ...args: any) {
-    super.init(ctx, ...args);
+  init(...args: any) {
+    super.init( ...args);
   }
   update(deltaTime: number, ...args: any) {
     super.update(deltaTime, args);
+    if (this.text === undefined || this.position === undefined) {
+      return;
+    }
+    this.bbox = getTextBBox(this.ctx, this.text, this.position);
   }
   render(...args: any) {
     super.render(args);
-    if (this.ctx === undefined) {
-      throw Error("ctx is not defined");
-    }
     if (this.position === undefined || this.text === undefined) {
       return;
     }
@@ -66,7 +67,6 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
       this.ctx.fillText(this.text, this.position.x, this.position.y);
     }
 
-    this.bbox = getTextBBox(this.ctx, this.text, this.position);
   }
   clean(...args: any) {
     super.clean(args);

@@ -55,7 +55,7 @@ export class SceneManager implements SceneHandler {
       this.currentScenes.push(loadingScene);
     }
 
-    const newSceneInitPromises = newScene.init(this.ctx!);
+    const newSceneInitPromises = newScene.init();
 
     if (newSceneInitPromises !== undefined) {
       await newSceneInitPromises;

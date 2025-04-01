@@ -1,23 +1,22 @@
 export type EventType = keyof HTMLElementEventMap;
+export type TriggerCondition<T extends EventType> = (ev: HTMLElementEventMap[T]) => boolean;
 
-export type TriggerCondition<T extends Event> = (ev: T) => boolean;
-
-export type Callback = {
-  eType: EventType;
+export type Callback<T extends EventType> = {
+  eventType: T;
   ev: Function;
-  triggerCondition?: TriggerCondition<Event>;
+  triggerCondition?: TriggerCondition<T>;
 };
 
 export type WithEvents = {
-  events: Map<string, Callback>;
+  events: Map<string, Callback<EventType>>;
   abortControllers: AbortController[];
   addCallback<T extends EventType>(
     eventType: T,
     id: string,
     ev: Function,
-    triggerCondition?: TriggerCondition<Event>,
+    triggerCondition?: TriggerCondition<T>,
   ): void;
-  enableEvent<T extends EventType>(
+  enableEvent<T>(
     eventType: T,
   ): (eventTarget: EventTarget) => void;
   removeCallback(id: string): void;
@@ -35,13 +34,13 @@ type AnonymousClass<Mixin> = new (...args: any[]) => {} & Mixin;
  */
 export function withEvents<T extends AnonymousClass<unknown>>(
   obj: T,
-): AnonymousClass<WithEvents> {
+): AnonymousClass<WithEvents> & T {
   return class extends obj implements WithEvents {
     /**
      * A map to store event callbacks by their ID.
      * @type {Map<string, Callback>}
      */
-    events: Map<string, Callback> = new Map();
+    events: Map<string, Callback<EventType>> = new Map<string, Callback<EventType>>();
 
     /**
      * A list of AbortController instances to manage event listeners.
@@ -51,32 +50,22 @@ export function withEvents<T extends AnonymousClass<unknown>>(
 
     /**
      * Adds a callback for a specific event type and ID.
-     *
-     * @template T
-     * @param {T} eventType - The type of the event.
-     * @param {string} id - The ID of the event callback.
-     * @param {Function} ev - The callback function for the event.
-     * @param {TriggerCondition<K>} [triggerCondition] - An optional condition that must be met for the event to trigger the callback.
-     * @returns {void}
      */
-    addCallback<T extends EventType>(
-      eventType: T,
+    addCallback<K extends EventType>(
+      eventType: K,
       id: string,
       ev: Function,
-      triggerCondition?: TriggerCondition<Event>,
+      triggerCondition?: TriggerCondition<K>,
     ): void {
       if (this.events?.has(id)) {
         console.warn(`event with id ${id} already exists!`);
         return;
       }
-      this.events?.set(id, { eType: eventType, ev, triggerCondition });
+      this.events?.set(id, { eventType, ev, triggerCondition: triggerCondition as TriggerCondition<EventType> });
     }
 
     /**
      * Removes a callback by its ID.
-     *
-     * @param {string} id - The ID of the event callback to remove.
-     * @returns {void}
      */
     removeCallback(id: string): void {
       if (this.events?.has(id) === false) {
@@ -102,8 +91,8 @@ export function withEvents<T extends AnonymousClass<unknown>>(
      * @param {T} eventType - The type of the event to enable.
      * @returns {(eventTarget: EventTarget) => void} A function that takes an event target and adds the event listeners to it.
      */
-    enableEvent<T extends EventType>(
-      eventType: T,
+    enableEvent<EventType>(
+      eventType: EventType,
     ): (eventTarget: EventTarget) => void {
       return (eventTarget: EventTarget) => {
         if (eventTarget === undefined) {
@@ -114,11 +103,11 @@ export function withEvents<T extends AnonymousClass<unknown>>(
             this.abortControllers.push(new AbortController()) - 1
           ];
         eventTarget.addEventListener(
-          eventType,
+          eventType as string,
           (ev: Event) => {
             this.events?.forEach((event) => {
               if (
-                event.eType !== eventType ||
+                event.eventType !== eventType ||
                 event.triggerCondition === undefined ||
                 event.triggerCondition(ev) === false
               ) {

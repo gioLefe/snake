@@ -1,5 +1,5 @@
 import { DIContainer, SceneHandler } from "@octo/core";
-import { isPointInAlignedBBox as isPointInBBox } from "@octo/helpers";
+import { isPointInAlignedBBox } from "@octo/helpers";
 import { SCENE_MANAGER_DI } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
 import { CLASSIC_GAME_SCENE_ID } from "../../classic-game/classic-game.scene";
@@ -14,26 +14,25 @@ export class PlayBtn extends withEvents(UILabel) {
   private mouseOver = false;
 
   init(
-    ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     ...args: any
   ): void {
-    super.init(ctx, canvas);
+    super.init(canvas);
     this.addCallback(
       "click",
       MOUSE_CLICK,
       this.playLblClick,
-      (ev: MouseEvent) => isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()),
+      (ev) => isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox())
     );
     this.enableEvent("click")(canvas);
 
-    this.addCallback(
+    this.addCallback<"mousemove">(
       "mousemove",
       MOUSE_ENTER_ID,
       () => this.playBtnMouseEnter(),
-      (ev: MouseEvent) =>
-        isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()) &&
-        this.mouseOver === false,
+      (ev) =>
+        isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox()) &&
+        this.mouseOver === false
     );
     this.enableEvent("mousemove")(canvas);
   }
@@ -48,11 +47,11 @@ export class PlayBtn extends withEvents(UILabel) {
   private playBtnMouseEnter() {
     this.setFillStyle("#a22");
     this.mouseOver = true;
-    this.addCallback(
+    this.addCallback<"mousemove">(
       "mousemove",
       MOUSE_LEAVE_ID,
       () => this.playBtnMouseLeave(),
-      (ev: MouseEvent) => !isPointInBBox({ x: ev.x, y: ev.y }, this.getBBox()),
+      (ev) => !isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox()),
     );
   }
   private playBtnMouseLeave() {
