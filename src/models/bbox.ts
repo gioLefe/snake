@@ -1,6 +1,6 @@
-import { Vec2 } from "@octo/models"
+import { Vec2 } from "@octo/models";
 
 export type BoundingBox<T> = {
-    nw: Vec2<T>,
-    se: Vec2<T>
-}
+  nw: Vec2<T>;
+  se: Vec2<T>;
+};

@@ -7,17 +7,21 @@ export interface RenderingPolygonParams {
   strokeColor?: string;
   selectedStrokeColor?: string;
   collisionStrokeColor?: string;
-  worldCoordinates: Vec2<number>
+  worldCoordinates: Vec2<number>;
 }
 
 const DEFAULT_POLYGON_PARAMS: RenderingPolygonParams = {
   strokeColor: "#000000",
   selectedStrokeColor: "#aa0000",
   collisionStrokeColor: "#00a4FF",
-  worldCoordinates: { x: 0, y: 0 }
-}
+  worldCoordinates: { x: 0, y: 0 },
+};
 
-export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, options: RenderingPolygonParams = DEFAULT_POLYGON_PARAMS): void {
+export function renderPolygon(
+  polygon: Polygon,
+  ctx: CanvasRenderingContext2D,
+  options: RenderingPolygonParams = DEFAULT_POLYGON_PARAMS,
+): void {
   if (!polygon) {
     console.error("Polygon is null");
     return;
@@ -33,7 +37,7 @@ export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, o
     y: options.worldCoordinates.y + +polygon.points[0].y,
   };
   ctx.moveTo(origin.x, origin.y);
-  ctx.strokeStyle = options.strokeColor ?? DEFAULT_POLYGON_PARAMS.strokeColor!
+  ctx.strokeStyle = options.strokeColor ?? DEFAULT_POLYGON_PARAMS.strokeColor!;
   ctx.lineWidth = 1;
 
   if (polygon.color) {
@@ -44,7 +48,7 @@ export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, o
   for (let i = 1; i < polygon.points.length; i++) {
     ctx.lineTo(
       options.worldCoordinates.x + polygon.points[i].x,
-      options.worldCoordinates.y + +polygon.points[i].y
+      options.worldCoordinates.y + +polygon.points[i].y,
     );
   }
   ctx.lineTo(origin.x, origin.y);
@@ -57,9 +61,12 @@ export function renderPolygon(polygon: Polygon, ctx: CanvasRenderingContext2D, o
   }
 }
 
-export function createTriangle(height: number, color: string = "#ffb3ba"): Polygon | null {
+export function createTriangle(
+  height: number,
+  color: string = "#ffb3ba",
+): Polygon | null {
   if (height === 0) {
-    console.warn('height cannot be 0');
+    console.warn("height cannot be 0");
     return null;
   }
   return {
@@ -70,13 +77,16 @@ export function createTriangle(height: number, color: string = "#ffb3ba"): Polyg
       { x: height / 2, y: height / 2 },
       { x: height / 2, y: -height / 2 },
     ],
-    sideLength: 2 * height / Math.sqrt(3)
+    sideLength: (2 * height) / Math.sqrt(3),
   } as Polygon;
 }
 
-export function createSquare(sideLength: number, color: string = "#ffb3ba"): Polygon | null {
+export function createSquare(
+  sideLength: number,
+  color: string = "#ffb3ba",
+): Polygon | null {
   if (sideLength === 0) {
-    console.warn('sideLength cannot be 0');
+    console.warn("sideLength cannot be 0");
     return null;
   }
   return {
@@ -88,20 +98,21 @@ export function createSquare(sideLength: number, color: string = "#ffb3ba"): Pol
       { x: sideLength / 2, y: -sideLength / 2 },
       { x: -sideLength / 2, y: -sideLength / 2 },
     ],
-    sideLength
+    sideLength,
   } as Polygon;
 }
 
-export function createPolygon(
-  defaults: Partial<Polygon> = {}
-): Polygon {
+export function createPolygon(defaults: Partial<Polygon> = {}): Polygon {
   return {
     color: defaults.color ?? "#ffb3ba",
     fill: defaults.fill ?? true,
     outline: defaults.outline ?? true,
     numSides: defaults.numSides ?? 3,
-    points: generatePolygonPoints(defaults.numSides ?? 3, defaults.sideLength ?? 10),
-    sideLength: defaults.sideLength ?? 10
+    points: generatePolygonPoints(
+      defaults.numSides ?? 3,
+      defaults.sideLength ?? 10,
+    ),
+    sideLength: defaults.sideLength ?? 10,
   } as Polygon;
 }
 
@@ -109,28 +120,38 @@ export function updatePolygonShape(polygon: Polygon) {
   return {
     ...polygon,
     points: generatePolygonPoints(polygon.numSides, polygon.sideLength),
-  } as Polygon
+  } as Polygon;
 }
 
 export function rotatePolygon(polygon: Polygon, radiants: number): Polygon {
   return {
     ...polygon,
-    points: generatePolygonPoints(polygon.numSides, polygon.sideLength, radiants)
-  }
+    points: generatePolygonPoints(
+      polygon.numSides,
+      polygon.sideLength,
+      radiants,
+    ),
+  };
 }
 
 export function calculateNormals(points: Vec2<number>[]) {
-  return calculateEdgesPerpendiculars(points)
-    .reduce((accumulation: Vec2<number>[], current: Vec2<number>) => {
+  return calculateEdgesPerpendiculars(points).reduce(
+    (accumulation: Vec2<number>[], current: Vec2<number>) => {
       return accumulation.some(
-        (n) => Math.abs(n.y) === Math.abs(current.y)
-          && Math.abs(n.x) === Math.abs(current.x))
+        (n) =>
+          Math.abs(n.y) === Math.abs(current.y) &&
+          Math.abs(n.x) === Math.abs(current.x),
+      )
         ? accumulation
-        : accumulation.concat(current)
-    }, []);
+        : accumulation.concat(current);
+    },
+    [],
+  );
 }
 
-export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<number>[] {
+export function calculateEdgesPerpendiculars(
+  points: Vec2<number>[],
+): Vec2<number>[] {
   const perpendiculars: Vec2<number>[] = [];
 
   const numPoints = points.length;
@@ -142,18 +163,25 @@ export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<numbe
     // Calculate edge vector
     const edge: Vec2<number> = {
       x: p2.x - p1.x,
-      y: p2.y - p1.y
+      y: p2.y - p1.y,
     };
 
     // Calculate perpendicular axis by swapping x and y and negating one
     const perpendicularAxis = getVectorPerpendicular(edge);
     if (perpendicularAxis === null) {
-      console.warn(`%c *** Cannot calculate perpendicular for edge`, `background:#222; color: #FFda55`, edge)
+      console.warn(
+        `%c *** Cannot calculate perpendicular for edge`,
+        `background:#222; color: #FFda55`,
+        edge,
+      );
       continue;
     }
 
     // Normalize the perpendicular axis
-    const length = Math.sqrt(perpendicularAxis.x * perpendicularAxis.x + perpendicularAxis.y * perpendicularAxis.y);
+    const length = Math.sqrt(
+      perpendicularAxis.x * perpendicularAxis.x +
+        perpendicularAxis.y * perpendicularAxis.y,
+    );
     perpendicularAxis.x /= length;
     perpendicularAxis.y /= length;
 
@@ -166,7 +194,7 @@ export function calculateEdgesPerpendiculars(points: Vec2<number>[]): Vec2<numbe
 function generatePolygonPoints(
   numSides: number,
   sideLength: number,
-  radiants?: number
+  radiants?: number,
 ): Vec2<number>[] {
   const points: Vec2<number>[] = [];
   let fullCircle = 2 * Math.PI;
@@ -175,7 +203,7 @@ function generatePolygonPoints(
   for (let i = 0; i < numSides; i++) {
     let angle = i * angleIncrement;
     if (radiants) {
-      angle = angle + radiants
+      angle = angle + radiants;
     }
 
     const x = sideLength * Math.cos(angle);
@@ -188,7 +216,7 @@ function generatePolygonPoints(
 
 export function getBBoxRect(
   buondingBox: BoundingBox<number>,
-  defaults: Partial<Polygon> = {}
+  defaults: Partial<Polygon> = {},
 ): Polygon {
   return {
     color: defaults.color ?? "#ffb3ba",

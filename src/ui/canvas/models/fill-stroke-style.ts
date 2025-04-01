@@ -1,1 +1,1 @@
-export type FillStrokeStyle = string | CanvasGradient | CanvasPattern
+export type FillStrokeStyle = string | CanvasGradient | CanvasPattern;

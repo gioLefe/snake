@@ -1,3 +1,2 @@
-import './snake/snake-game';
+import "./snake/snake-game";
 import "./style.css";
-
