@@ -52,6 +52,7 @@ export class ClassicGameScene
   async init(): Promise<any> {
     this.gameOver = false;
     this.score = 0;
+    this.pickups = []
 
     if (this.initialWorldCoordinates === undefined) {
       console.warn('initial world coordinates are not found');

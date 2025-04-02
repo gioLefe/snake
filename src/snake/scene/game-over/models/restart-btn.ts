@@ -30,6 +30,7 @@ export class RestartBtn extends UIButton {
   }
 
   clean(...args: any): void {
+    super.clean();
     this.abortControllers.forEach((a) => a.abort());
     this.removeCallback(MOUSE_CLICK);
   }

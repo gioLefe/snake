@@ -27,6 +27,12 @@ export class UIButton extends withEvents(UILabel) {
         this.enableEvent("mousemove")(canvas);
     }
 
+    clean(...args: any): void {
+        super.clean()
+        this.removeCallback(MOUSE_ENTER_ID);
+        this.removeCallback(MOUSE_LEAVE_ID);
+    }
+
     private playBtnMouseEnter() {
         // this.setFillStyle("#a22");
         this.mouseOver = true;
