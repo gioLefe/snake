@@ -28,7 +28,6 @@ export class MainMenuScene implements CanvasScene2D {
     this.title.setFillStyle("#aFF");
     this.title.setStrokeStyle("#32FFaF");
 
-    console.log(`%c x:${this.canvas?.width / 2 - 50}; y:${this.canvas?.height / 2}`, `background:rgb(1,1,0); color:rgb(149, 210, 70)`,)
     this.playBtn = new PlayBtn(
       this.ctx,
       "",

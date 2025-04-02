@@ -24,6 +24,7 @@
       "@octo/core": ["core"],
       "@octo/models": ["models"],
       "@octo/helpers": ["helpers"],
+      "@octo/ui": ["ui"],
       "@octo/ui/canvas": ["ui/canvas"],
       "@octo/ui/canvas/models": ["ui/canvas/models"],
       "@octo/ui/controls": ["ui/controls"]

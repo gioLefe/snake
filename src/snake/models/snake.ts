@@ -19,7 +19,7 @@ const DEBUG = false;
 
 export class Snake extends GameObject<CanvasRenderingContext2D> {
   id: string;
-  private readonly BIT_DISTANCE = 14;
+  private readonly BIT_DISTANCE = 20;
   private length: number = 10;
   private direction: number = Math.random() % (Math.PI * 2);
   private segments: Segment[] = [];

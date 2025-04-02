@@ -62,7 +62,7 @@ export abstract class Game implements GameCycle {
       console.log(`%c *** Init`, `background:#020; color:#adad00`);
     }
 
-    this.sceneManager = new SceneManager(ctx);
+    this.sceneManager = new SceneManager();
     this.assetsManager = new AssetsManager();
     this.diContainer.register<SceneHandler>(
       SCENE_MANAGER_DI,

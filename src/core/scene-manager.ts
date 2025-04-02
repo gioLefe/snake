@@ -3,12 +3,8 @@ import { SceneHandler } from "@octo/core";
 
 export class SceneManager implements SceneHandler {
   private currentScenes: CanvasScene2D[] = [];
-  private ctx: CanvasRenderingContext2D | undefined;
   private scenes: CanvasScene2D[] = [];
 
-  constructor(ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx;
-  }
   addScene(scene: CanvasScene2D): void {
     if (this.scenes.findIndex((s) => s.id === scene?.id) !== -1) {
       console.warn("Scene with same id already exists, provide a new id");

@@ -5,6 +5,7 @@ import {
   MAIN_MENU_SCENE_ID,
   MainMenuScene,
 } from "./scene/main-menu/main-menu.scene";
+import { GameOverScene } from "snake/scene/game-over/game-over.scene";
 
 const cnv: HTMLCanvasElement | null = document.querySelector("canvas");
 
@@ -26,6 +27,7 @@ export class SnakeGame extends Game {
       }),
     );
     this.sceneManager?.addScene(new MainMenuScene(this.ctx, this.canvas));
+    this.sceneManager?.addScene(new GameOverScene(this.ctx, this.canvas));
 
     this.sceneManager?.changeScene(MAIN_MENU_SCENE_ID, false);
   }

@@ -1,5 +1,5 @@
-import { AssetsHandler, DIContainer } from "@octo/core";
-import { ASSETS_MANAGER_DI, CanvasScene2D, MinMax, Vec2 } from "@octo/models";
+import { AssetsHandler, DIContainer, SceneHandler } from "@octo/core";
+import { ASSETS_MANAGER_DI, CanvasScene2D, MinMax, SCENE_MANAGER_DI, Vec2 } from "@octo/models";
 import { Rat } from "snake/models/pickup/food/rat";
 import { withEvents } from "ui/with-events";
 import { Pickup, Snake } from "../../models";
@@ -8,6 +8,7 @@ import {
   initSnake,
 } from "./classic-game-init.scene";
 import { createVector, randomIntFromInterval } from "@octo/helpers";
+import { GAME_OVER_SCENE_ID } from "snake/scene/game-over/game-over.scene";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
 const CANVAS_BG_COLOR = "#afd7db";
@@ -25,13 +26,17 @@ export class ClassicGameScene
   ctx: CanvasRenderingContext2D;
   assetsManager =
     DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
+  sceneManager =
+    DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
 
-  playerSnake: Snake;
+  playerSnake: Snake | undefined;
   pickups: Pickup[] = [];
   allImagesPromises: Promise<void>[] = [];
+  initialWorldCoordinates: Vec2<number> | undefined;
 
   // Stats
   score = 0;
+  gameOver = false;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -41,34 +46,42 @@ export class ClassicGameScene
     super();
     this.ctx = ctx;
     this.canvas = canvas;
-    this.playerSnake = initSnake(ctx, {
-      worldCoordinates: {
-        x: initialWorldCoordinates.x,
-        y: initialWorldCoordinates.y,
-      },
-      length: 5,
-    });
+    this.initialWorldCoordinates = initialWorldCoordinates
   }
 
   async init(): Promise<any> {
+    this.gameOver = false;
+    this.score = 0;
+
+    if (this.initialWorldCoordinates === undefined) {
+      console.warn('initial world coordinates are not found');
+    }
+    this.playerSnake = initSnake(this.ctx, {
+      worldCoordinates: {
+        x: this.initialWorldCoordinates?.x ?? 0,
+        y: this.initialWorldCoordinates?.y ?? 0,
+      },
+      length: 5,
+    });
+
     this.addCallback(
       "mousemove",
       MOUSE_MOVE_EVENT_ID,
-      (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake),
+      (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake!),
       () => true,
     );
     this.enableEvent("mousemove")(this.canvas);
     this.addCallback(
       "keydown",
       KEY_DOWN_EVENT_ID,
-      (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake),
+      (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake!),
       () => true,
     );
     this.enableEvent("keydown")(window);
     this.addCallback(
       "keyup",
       KEY_UP_EVENT_ID,
-      (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake),
+      (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake!),
       () => true,
     );
     this.enableEvent("keyup")(window);
@@ -92,6 +105,31 @@ export class ClassicGameScene
   }
 
   update(deltaTime: number): void {
+    if (this.gameOver === true || this.playerSnake === undefined) {
+      return;
+    }
+
+    // Collision detection
+    const headSideLength = this.playerSnake.getHeadSize();
+    const headDistanceDelta: Vec2<number> = createVector(
+      this.playerSnake.getDirection(),
+      this.playerSnake.getSpeed(),
+    );
+    const headPos = this.playerSnake.getHeadPos();
+    const snakeNextPos = {
+      x: headPos.x + headDistanceDelta.x * deltaTime,
+      y: headPos.y + headDistanceDelta.y * deltaTime,
+    };
+
+    // TODO: - Snake colliding with itself
+
+    // - Snake colliding with screen borders
+    if (headPos.x < 0 || headPos.x > this.canvas.width || headPos.y < 0 || headPos.y > this.canvas.height) {
+      this.gameOver = true;
+      this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
+      return;
+    }
+
     // Spawn rats
     while (this.pickups.length < 5) {
       const rat = new Rat(
@@ -109,21 +147,6 @@ export class ClassicGameScene
       this.pickups.push(rat);
       rat.init(this.ctx);
     }
-
-    // Collision detection
-    const headSideLength = this.playerSnake.getHeadSize();
-    const headDistanceDelta: Vec2<number> = createVector(
-      this.playerSnake.getDirection(),
-      this.playerSnake.getSpeed(),
-    );
-    const snakeNextPos = {
-      x: this.playerSnake.getHeadPos().x + headDistanceDelta.x * deltaTime,
-      y: this.playerSnake.getHeadPos().y + headDistanceDelta.y * deltaTime,
-    };
-
-    // - Snake colliding with itself
-
-    // - Snake colliding with screen borders
 
     // - Food
     this.pickups.forEach((pickup, i) => {
@@ -168,7 +191,16 @@ export class ClassicGameScene
   }
 
   clean(...args: any) {
+    this.removeCallback(KEY_DOWN_EVENT_ID)
+    this.removeCallback(KEY_UP_EVENT_ID)
+    this.removeCallback(MOUSE_MOVE_EVENT_ID)
     this.abortControllers.forEach((ac) => ac.abort());
+  }
+
+  async restart() {
+    console.log('restarting classic game scene')
+    this.clean()
+    await this.init();
   }
 
   private mouseMove = (ev: MouseEvent) => {
