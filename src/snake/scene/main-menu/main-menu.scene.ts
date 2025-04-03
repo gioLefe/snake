@@ -12,7 +12,7 @@ export class MainMenuScene implements CanvasScene2D {
   // UI
   title: UILabel;
   playBtn: UILabel;
-  allImagesPromises: Promise<void>[] = [];
+  resourcesPromises: Promise<void>[] = [];
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;
@@ -20,10 +20,10 @@ export class MainMenuScene implements CanvasScene2D {
     this.title = new UILabel(
       this.ctx,
       "",
-      this.canvas?.width / 2 - 100,
+      this.canvas?.width / 2 - 160,
       60,
       { font: "48px Verdana" },
-      "SeRPeNT",
+      "I'm a snaaaake",
     );
     this.title.setFillStyle("#aFF");
     this.title.setStrokeStyle("#32FFaF");

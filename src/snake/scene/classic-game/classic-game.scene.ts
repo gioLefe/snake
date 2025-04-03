@@ -1,14 +1,13 @@
 import { AssetsHandler, DIContainer, SceneHandler } from "@octo/core";
-import { ASSETS_MANAGER_DI, CanvasScene2D, MinMax, SCENE_MANAGER_DI, Vec2 } from "@octo/models";
-import { Rat } from "snake/models/pickup/food/rat";
-import { withEvents } from "ui/with-events";
-import { Pickup, Snake } from "../../models";
+import { ASSETS_MANAGER_DI, CanvasScene2D, SoundAsset, MinMax, SCENE_MANAGER_DI, Vec2 } from "@octo/models";
+import { withEvents } from "@octo/ui";
+import { Cookie, Pickup, Snake } from "../../models";
 import {
-  CLASSIC_GAME_IMAGE_ASSETS,
+  CLASSIC_GAME_ASSETS,
   initSnake,
 } from "./classic-game-init.scene";
 import { createVector, randomIntFromInterval } from "@octo/helpers";
-import { GAME_OVER_SCENE_ID } from "snake/scene/game-over/game-over.scene";
+import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
 const CANVAS_BG_COLOR = "#afd7db";
@@ -31,7 +30,7 @@ export class ClassicGameScene
 
   playerSnake: Snake | undefined;
   pickups: Pickup[] = [];
-  allImagesPromises: Promise<void>[] = [];
+  resourcesPromises: Promise<void>[] = [];
   initialWorldCoordinates: Vec2<number> | undefined;
 
   // Stats
@@ -87,22 +86,14 @@ export class ClassicGameScene
     );
     this.enableEvent("keyup")(window);
 
-    CLASSIC_GAME_IMAGE_ASSETS.forEach((i) => {
-      this.allImagesPromises.push(
-        new Promise(async (resolve) => {
-          await this.assetsManager.addImage(i.id, i.path);
-          // TODO: move resolve outside the timeout and remove timeout, it is just for test purposes
-          // setTimeout(() => resolve(), 3000);
-          resolve();
-        }),
-      );
-    });
-    try {
-      const r = await Promise.all(this.allImagesPromises);
-      return r;
-    } catch (reason) {
-      console.error(reason);
-    }
+    this.resourcesPromises.push(
+      ...this.assetsManager.add(CLASSIC_GAME_ASSETS)
+    )
+
+    return Promise.allSettled(this.resourcesPromises).then(() => {
+      // play start sound
+      this.assetsManager.find<SoundAsset>('snake-eat-01')?.source.play()
+    })
   }
 
   update(deltaTime: number): void {
@@ -126,16 +117,15 @@ export class ClassicGameScene
 
     // - Snake colliding with screen borders
     if (headPos.x < 0 || headPos.x > this.canvas.width || headPos.y < 0 || headPos.y > this.canvas.height) {
-      this.gameOver = true;
-      this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
+      this.die()
       return;
     }
 
-    // Spawn rats
+    // Spawn cookies
     while (this.pickups.length < 5) {
-      const rat = new Rat(
+      const cookie = new Cookie(
         this.ctx,
-        "rat",
+        "cookie",
         FOOD_SIZE,
         FOOD_SIZE,
         this.calcRandomPosition(
@@ -145,8 +135,8 @@ export class ClassicGameScene
           { min: FOOD_SIZE, max: FOOD_SIZE },
         ),
       );
-      this.pickups.push(rat);
-      rat.init(this.ctx);
+      this.pickups.push(cookie);
+      cookie.init(this.ctx);
     }
 
     // - Food
@@ -163,6 +153,7 @@ export class ClassicGameScene
         snakeNextPos.y <= pickupPos.y + pickup.getHeight() + headSideLength
       ) {
         pickup.onPickup(this.playerSnake);
+        this.assetsManager.find<SoundAsset>('snake-eat')?.source.play();
         this.pickups[i].clean();
         this.pickups.splice(i, 1);
         this.score += 1;
@@ -252,5 +243,11 @@ export class ClassicGameScene
         Math.random() * (containerH - minMaxH.max / 2),
       ),
     };
+  }
+
+  private die() {
+    this.assetsManager.find<SoundAsset>('snake-death')?.source.play()
+    this.gameOver = true;
+    this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
   }
 }

@@ -1,10 +1,10 @@
-import { AssetsHandler, DIContainer } from "@octo/core";
+import { GameAsset, AssetsHandler, DIContainer } from "@octo/core";
 import { ASSETS_MANAGER_DI, CanvasScene2D, GameObject } from "@octo/models";
 import { Spinner } from "./models/";
 
 export const LOADING_SCENE_SCENE_ID = "loading";
-export const LOADING_IMAGE_ASSETS: { id: string; path: string }[] = [
-  { id: "spinner", path: "/images/spritesheets/spinner.gif" },
+export const LOADING_IMAGE_ASSETS: GameAsset[] = [
+  { id: "spinner", path: "/public/assets/images/spinner.gif", type: "IMAGE" },
 ];
 
 export class LoadingScene implements CanvasScene2D {
@@ -23,22 +23,17 @@ export class LoadingScene implements CanvasScene2D {
     this.spinner = new Spinner(this.ctx);
     this.canvas = canvas;
   }
-  allImagesPromises: Promise<void>[] = [];
+  resourcesPromises: Promise<void>[] = [];
 
-  init(...args: any) {
-    LOADING_IMAGE_ASSETS.forEach((i) => {
-      this.allImagesPromises.push(
-        new Promise(async (resolve, reject) => {
-          await this.assetsManager.addImage(i.id, i.path);
+  async init(...args: any) {
+    this.resourcesPromises.push(
+      ...this.assetsManager.add(LOADING_IMAGE_ASSETS)
+    )
 
-          // Init all components
-          this.spinner.init(this.ctx!);
-          resolve();
-        }),
-      );
+    return await Promise.all(this.resourcesPromises).then((results) => {
+      // Init all components
+      this.spinner.init(this.ctx);
     });
-
-    return Promise.all(this.allImagesPromises);
   }
   update(deltaTime: number, ...args: any) {
     this.spinner.update(deltaTime);
@@ -57,5 +52,5 @@ export class LoadingScene implements CanvasScene2D {
     this.ctx.globalAlpha = 1;
     this.spinner.render();
   }
-  clean(...args: any) {}
+  clean(...args: any) { }
 }

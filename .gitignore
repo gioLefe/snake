@@ -23,6 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-public/**/*.png
-images/*.xcf
-images
+*.xcf
+/images/**/*

@@ -1,38 +1,31 @@
-import { HTMLImageAsset, Tag } from "@octo/models";
+import { ImageAsset, SoundAsset, Tag } from "@octo/models";
 
-export type AssetRequest = { id: string; path: string };
+export type GameAsset = { id: string; path: string, type: 'IMAGE' | 'AUDIO' };
 
 export interface AssetsHandler {
-  assets: Map<string, HTMLImageAsset> | undefined;
-  addImage(id: string, path: string): Promise<void>;
-  addImages(images: AssetRequest[]): Promise<void>[];
-  getImage(id: string): HTMLImageAsset | undefined;
-  deleteImage(id: string): void;
+  assets: Map<string, ImageAsset | SoundAsset> | undefined;
+  add(assetRequests: GameAsset[]): Promise<void>[];
+  find<T extends ImageAsset | SoundAsset>(id: string): T | undefined;
+  delete(id: string): void;
+
   addTag(id: string, tag: Tag): void;
 }
 
 export class AssetsManager implements AssetsHandler {
-  assets: Map<string, HTMLImageAsset>;
+  assets: Map<string, ImageAsset | SoundAsset> = new Map();
 
-  constructor() {
-    this.assets = new Map();
+  add(assetRequests: GameAsset[]): Promise<void>[] {
+    return assetRequests.map((request) => this.createObjectPromise(this, request));
   }
 
-  addImage(id: string, path: string): Promise<void> {
-    return this.addImagePromise(this, id, path);
-  }
-  addImages(images: AssetRequest[]): Promise<void>[] {
-    return images.map((i) => this.addImagePromise(this, i.id, i.path));
-  }
-
-  getImage(id: string): HTMLImageAsset | undefined {
+  find<T>(id: string): T | undefined {
     if (this.assets.has(id) === false) {
       console.warn(`cannot find asset ${id}`);
       return;
     }
-    return this.assets.get(id);
+    return this.assets.get(id) as T;
   }
-  deleteImage(id: string): void {
+  delete(id: string): void {
     this.assets.delete(id);
   }
   addTag(id: string, tag: Tag): void {
@@ -45,17 +38,25 @@ export class AssetsManager implements AssetsHandler {
     this.assets.set(id, a);
   }
 
-  private addImagePromise(assetManagerHandle: this, id: string, path: string) {
-    return new Promise<void>(function (resolve, reject) {
-      const img = new Image();
-      img.onload = function () {
-        assetManagerHandle.assets.set(id, { img, tags: [] });
-        resolve();
+  private createObjectPromise(assetManagerHandle: this, assetRequest: GameAsset): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      let obj: HTMLImageElement | HTMLAudioElement;
+
+      if (assetRequest.type === "AUDIO") {
+        obj = new Audio(assetRequest.path);
+        assetManagerHandle.assets.set(assetRequest.id, { source: obj as HTMLAudioElement, tags: [] });
+        return resolve();
+      }
+
+      obj = new Image();
+      obj.onload = function () {
+        assetManagerHandle.assets.set(assetRequest.id, { source: obj as HTMLImageElement, tags: [] });
+        return resolve();
       };
-      img.onerror = function () {
-        reject(`cannot load ${id} at ${path}`);
+      obj.onerror = function () {
+        reject(`cannot load ${assetRequest.id} at ${assetRequest.path}`);
       };
-      img.src = path;
-    });
+      obj.src = assetRequest.path;
+    })
   }
 }

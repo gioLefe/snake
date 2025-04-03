@@ -12,7 +12,7 @@ export class GameOverScene implements CanvasScene2D {
   // UI
   gameOverLabel: UILabel;
   restartBtn: RestartBtn;
-  allImagesPromises: Promise<void>[] = [];
+  resourcesPromises: Promise<void>[] = [];
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;

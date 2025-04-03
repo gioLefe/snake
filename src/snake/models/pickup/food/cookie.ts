@@ -1,14 +1,14 @@
 import { AssetsHandler, DIContainer } from "@octo/core";
 import { calculateNormals, getBBoxRect } from "@octo/helpers";
-import { ASSETS_MANAGER_DI, HTMLImageAsset, Polygon, Vec2 } from "@octo/models";
+import { ASSETS_MANAGER_DI, ImageAsset, Polygon, Vec2 } from "@octo/models";
 import { Food } from "../../food";
 import { Snake } from "../../snake";
 
 const DEBUG: boolean = true;
 
-export class Rat extends Food {
+export class Cookie extends Food {
   value = 1;
-  image: HTMLImageAsset | undefined;
+  image: ImageAsset | undefined;
   resReady = false;
   assetsManager =
     DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
@@ -24,9 +24,9 @@ export class Rat extends Food {
   ) {
     super(ctx, id);
     this.position = worldCoordinates;
-    this.image = this.assetsManager.getImage("rat");
-    this.width = width ? width : this.image ? this.image.img.width : 0;
-    this.height = height ? height : this.image ? this.image.img.height : 0;
+    this.image = this.assetsManager.find("rat") as ImageAsset;
+    this.width = width ? width : this.image ? this.image.source.width : 0;
+    this.height = height ? height : this.image ? this.image.source.height : 0;
   }
 
   onPickup(...args: any[]): void {
@@ -49,7 +49,7 @@ export class Rat extends Food {
     }
     if (this.image !== undefined && this.position !== undefined) {
       this.ctx.drawImage(
-        this.image?.img,
+        this.image?.source,
         this.position.x,
         this.position.y,
         this.width,

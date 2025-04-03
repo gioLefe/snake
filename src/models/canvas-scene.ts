@@ -4,5 +4,5 @@ export interface CanvasScene2D extends GameCycle {
   id: string;
   canvas: HTMLCanvasElement | undefined;
   ctx: CanvasRenderingContext2D | undefined;
-  allImagesPromises: Promise<void>[];
+  resourcesPromises: Promise<void>[];
 }
