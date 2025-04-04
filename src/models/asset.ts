@@ -6,6 +6,6 @@ export type ImageAsset = {
 };
 
 export type SoundAsset = {
-  source: HTMLAudioElement;
+  source: ArrayBuffer;
   tags: Tag[];
 };

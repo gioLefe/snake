@@ -12,7 +12,6 @@ export class MainMenuScene implements CanvasScene2D {
   // UI
   title: UILabel;
   playBtn: UILabel;
-  resourcesPromises: Promise<void>[] = [];
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;

@@ -1,4 +1,4 @@
-import { AssetsHandler, DIContainer, SceneHandler } from "@octo/core";
+import { AssetsHandler, DIContainer, SceneHandler, AudioController } from "@octo/core";
 import { ASSETS_MANAGER_DI, CanvasScene2D, SoundAsset, MinMax, SCENE_MANAGER_DI, Vec2 } from "@octo/models";
 import { withEvents } from "@octo/ui";
 import { Cookie, Pickup, Snake } from "../../models";
@@ -27,10 +27,10 @@ export class ClassicGameScene
     DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
   sceneManager =
     DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
+  audioController = DIContainer.getInstance().resolve<AudioController>(AudioController.AUDIO_CONTROLLER_DI);
 
   playerSnake: Snake | undefined;
   pickups: Pickup[] = [];
-  resourcesPromises: Promise<void>[] = [];
   initialWorldCoordinates: Vec2<number> | undefined;
 
   // Stats
@@ -86,13 +86,8 @@ export class ClassicGameScene
     );
     this.enableEvent("keyup")(window);
 
-    this.resourcesPromises.push(
-      ...this.assetsManager.add(CLASSIC_GAME_ASSETS)
-    )
-
-    return Promise.allSettled(this.resourcesPromises).then(() => {
-      // play start sound
-      this.assetsManager.find<SoundAsset>('snake-eat-01')?.source.play()
+    return Promise.allSettled(this.assetsManager.add(CLASSIC_GAME_ASSETS)).then(() => {
+      this.audioController.play(this.assetsManager.find<SoundAsset>('snake-start')?.source)
     })
   }
 
@@ -153,7 +148,8 @@ export class ClassicGameScene
         snakeNextPos.y <= pickupPos.y + pickup.getHeight() + headSideLength
       ) {
         pickup.onPickup(this.playerSnake);
-        this.assetsManager.find<SoundAsset>('snake-eat')?.source.play();
+        this.audioController.play(this.assetsManager.find<SoundAsset>('snake-eat')?.source)
+
         this.pickups[i].clean();
         this.pickups.splice(i, 1);
         this.score += 1;
@@ -246,7 +242,7 @@ export class ClassicGameScene
   }
 
   private die() {
-    this.assetsManager.find<SoundAsset>('snake-death')?.source.play()
+    this.audioController.play(this.assetsManager.find<SoundAsset>('snake-death')?.source)
     this.gameOver = true;
     this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
   }

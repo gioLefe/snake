@@ -10,10 +10,10 @@ export const COLORS: string[] = [
   "#bae1ff",
 ];
 export const CLASSIC_GAME_ASSETS: GameAsset[] = [
-  { id: "rat", path: "public/assets/images/cookie.webp", type: "IMAGE" },
-  { id: "snake-eat-01", path: "public/assets/audio/snake-01.mp3", type: "AUDIO" },
-  { id: "snake-death", path: "public/assets/audio/snake-death.mp3", type: "AUDIO" },
-  { id: "snake-eat", path: "public/assets/audio/snake-eat.mp3", type: "AUDIO" },
+  { id: "rat", path: "assets/images/cookie.webp", type: "IMAGE" },
+  { id: "snake-start", path: "assets/audio/snake-start.mp3", type: "AUDIO" },
+  { id: "snake-death", path: "assets/audio/snake-death.mp3", type: "AUDIO" },
+  { id: "snake-eat", path: "assets/audio/snake-eat.mp3", type: "AUDIO" },
 ];
 
 export function initSnake(

@@ -24,7 +24,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
   private direction: number = Math.random() % (Math.PI * 2);
   private segments: Segment[] = [];
   private turboSpeed: number = 500;
-  private speed: number = 250;
+  private speed: number = 350;
   private turbonOn: boolean = false;
 
   private maxSteerAngle = 0.3;

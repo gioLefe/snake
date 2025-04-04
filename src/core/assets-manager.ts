@@ -43,9 +43,14 @@ export class AssetsManager implements AssetsHandler {
       let obj: HTMLImageElement | HTMLAudioElement;
 
       if (assetRequest.type === "AUDIO") {
-        obj = new Audio(assetRequest.path);
-        assetManagerHandle.assets.set(assetRequest.id, { source: obj as HTMLAudioElement, tags: [] });
-        return resolve();
+        const request = new XMLHttpRequest();
+        request.open("GET", assetRequest.path, true);
+        request.responseType = "arraybuffer";
+        request.onload = function () {
+          assetManagerHandle.assets.set(assetRequest.id, { source: request.response, tags: [] });
+          return resolve();
+        };
+        request.send()
       }
 
       obj = new Image();

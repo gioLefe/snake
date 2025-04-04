@@ -1,6 +1,7 @@
 import { SceneHandler, SceneManager, DIContainer } from "@octo/core";
 import { GameCycle } from "@octo/models";
 import { AssetsHandler, AssetsManager } from "core/assets-manager";
+import { AudioController } from "core/audio-controller";
 
 export const SCENE_MANAGER_DI = "SceneManager";
 export const ASSETS_MANAGER_DI = "AsetsManager";
@@ -71,6 +72,10 @@ export abstract class Game implements GameCycle {
     this.diContainer.register<AssetsHandler>(
       ASSETS_MANAGER_DI,
       this.assetsManager,
+    );
+    this.diContainer.register<AudioController>(
+      AudioController.AUDIO_CONTROLLER_DI,
+      new AudioController(),
     );
   }
 

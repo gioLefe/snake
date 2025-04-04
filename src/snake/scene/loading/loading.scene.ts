@@ -4,7 +4,7 @@ import { Spinner } from "./models/";
 
 export const LOADING_SCENE_SCENE_ID = "loading";
 export const LOADING_IMAGE_ASSETS: GameAsset[] = [
-  { id: "spinner", path: "/public/assets/images/spinner.gif", type: "IMAGE" },
+  { id: "spinner", path: "/assets/images/spinner.gif", type: "IMAGE" },
 ];
 
 export class LoadingScene implements CanvasScene2D {
@@ -23,14 +23,10 @@ export class LoadingScene implements CanvasScene2D {
     this.spinner = new Spinner(this.ctx);
     this.canvas = canvas;
   }
-  resourcesPromises: Promise<void>[] = [];
 
   async init(...args: any) {
-    this.resourcesPromises.push(
-      ...this.assetsManager.add(LOADING_IMAGE_ASSETS)
-    )
 
-    return await Promise.all(this.resourcesPromises).then((results) => {
+    return await Promise.all(this.assetsManager.add(LOADING_IMAGE_ASSETS)).then((results) => {
       // Init all components
       this.spinner.init(this.ctx);
     });
