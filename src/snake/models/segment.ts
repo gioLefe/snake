@@ -17,7 +17,6 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
   private nextPivot: LinkedListNode<Pivot> | undefined;
   private popPivotFn: () => Pivot | undefined;
   private isTail = false;
-  private position: Vec2<number> = { x: 0, y: 0 };
 
   constructor(
     ctx: CanvasRenderingContext2D,

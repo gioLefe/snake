@@ -24,8 +24,8 @@ export class GameOverScene implements CanvasScene2D {
       { font: "48px Verdana" },
       "GAME OVER",
     );
-    this.gameOverLabel.setFillStyle("rgba(12, 195, 49, 0.57)");
-    this.gameOverLabel.setStrokeStyle("rgb(12, 195, 48)");
+    this.gameOverLabel.setTextFillStyle("rgba(12, 195, 49, 0.57)");
+    this.gameOverLabel.setTextStrokeStyle("rgb(12, 195, 48)");
 
     this.restartBtn = new RestartBtn(
       this.ctx,
@@ -35,8 +35,8 @@ export class GameOverScene implements CanvasScene2D {
       { font: "48px Verdana" },
       "Restart",
     );
-    this.restartBtn.setFillStyle("#204Fa1");
-    this.restartBtn.setStrokeStyle("#00FFad");
+    this.restartBtn.setTextFillStyle("#204Fa1");
+    this.restartBtn.setTextStrokeStyle("#00FFad");
   }
 
   init(): void {

@@ -17,7 +17,7 @@ export class SnakeGame extends Game {
     if (this.ctx === undefined || this.ctx === null) {
       throw Error("ctx is undefined");
     }
-    super.init(this.ctx);
+    super.init();
 
     this.sceneManager?.addScene(new LoadingScene(this.ctx, this.canvas));
     this.sceneManager?.addScene(

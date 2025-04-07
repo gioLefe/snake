@@ -1,17 +1,26 @@
-import { BoundingBox, GameObject, Vec2 } from "@octo/models";
+import { BoundingBox, GameObject } from "@octo/models";
 import { FillStrokeStyle, getTextBBox } from "@octo/ui/canvas";
 
 export class UILabel extends GameObject<CanvasRenderingContext2D> {
   id: string | undefined;
-  private position: Vec2<number> | undefined;
-  private text: string;
 
+  private text: string;
+  private readonly DEFAULT_TEXT_STYLE: CanvasTextDrawingStyles = {
+    direction: "inherit",
+    font: "10px sans-serif",
+    fontKerning: "auto",
+    fontStretch: "normal",
+    fontVariantCaps: "normal",
+    letterSpacing: "normal",
+    textAlign: "start",
+    textBaseline: "alphabetic",
+    textRendering: "auto",
+    wordSpacing: "normal",
+  };
   private textMetric: TextMetrics | undefined;
-  private textStyle: CanvasTextDrawingStyles = this.defaultTextStyle();
-  private fill: boolean = true;
-  private outline: boolean = true;
-  private fillStyle: FillStrokeStyle = "#000";
-  private strokeStyle: FillStrokeStyle = "#000";
+  private textStyle: CanvasTextDrawingStyles = this.DEFAULT_TEXT_STYLE;
+  private textFillStyle: FillStrokeStyle | undefined = "#000";
+  private textStrokeStyle: FillStrokeStyle | undefined = "#000";
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -31,7 +40,7 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
   }
 
   init(...args: any) {
-    super.init( ...args);
+    super.init(...args);
   }
   update(deltaTime: number, ...args: any) {
     super.update(deltaTime, args);
@@ -58,12 +67,12 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     //TODO add wordSpacing
 
     this.ctx.moveTo(this.position?.x, this.position.y);
-    if (this.outline) {
-      this.ctx.strokeStyle = this.strokeStyle;
+    if (this.textStrokeStyle !== undefined) {
+      this.ctx.strokeStyle = this.textStrokeStyle;
       this.ctx.strokeText(this.text, this.position.x, this.position.y);
     }
-    if (this.fill) {
-      this.ctx.fillStyle = this.fillStyle;
+    if (this.textFillStyle !== undefined) {
+      this.ctx.fillStyle = this.textFillStyle;
       this.ctx.fillText(this.text, this.position.x, this.position.y);
     }
 
@@ -75,12 +84,7 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
   setText(text: string) {
     this.text = text;
   }
-  setPosition(x: number, y: number) {
-    this.position = { x, y };
-  }
-  getPosition(): Vec2<number> | undefined {
-    return this.position;
-  }
+
   getSize(): TextMetrics | undefined {
     return this.textMetric;
   }
@@ -88,34 +92,13 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     return this.bbox;
   }
 
-  setFillStyle(style: FillStrokeStyle) {
-    this.fillStyle = style;
+  setTextFillStyle(style: FillStrokeStyle) {
+    this.textFillStyle = style;
   }
-  setStrokeStyle(style: FillStrokeStyle) {
-    this.strokeStyle = style;
+  setTextStrokeStyle(style: FillStrokeStyle) {
+    this.textStrokeStyle = style;
   }
-  setFont(font: string) {
-    this.textStyle.font = font;
-  }
-  setTextAlign(align: CanvasTextAlign) {
-    this.textStyle.textAlign = align;
-  }
-  setTextBaseline(baseline: CanvasTextBaseline) {
-    this.textStyle.textBaseline = baseline;
-  }
-
-  private defaultTextStyle(): CanvasTextDrawingStyles {
-    return {
-      direction: "inherit",
-      font: "10px sans-serif",
-      fontKerning: "auto",
-      fontStretch: "normal",
-      fontVariantCaps: "normal",
-      letterSpacing: "normal",
-      textAlign: "start",
-      textBaseline: "alphabetic",
-      textRendering: "auto",
-      wordSpacing: "normal",
-    };
+  setTextStyle(textStyle: CanvasTextDrawingStyles) {
+    this.textStyle = textStyle
   }
 }

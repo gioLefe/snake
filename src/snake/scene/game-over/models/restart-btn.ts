@@ -22,10 +22,10 @@ export class RestartBtn extends UIButton {
     this.enableEvent("click")(canvas);
 
     this.mouseEnterCallbacks.push(() => {
-      this.setFillStyle('rgb(0, 92, 3)')
+      this.setTextFillStyle('rgb(0, 92, 3)')
     })
     this.mouseLeaveCallbacks.push(() => {
-      this.setFillStyle('#204Fa1')
+      this.setTextFillStyle('#204Fa1')
     })
   }
 

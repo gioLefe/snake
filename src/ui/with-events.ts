@@ -1,3 +1,5 @@
+import { AnonymousClass } from "@octo/models";
+
 export type EventType = keyof HTMLElementEventMap;
 export type TriggerCondition<T extends EventType> = (ev: HTMLElementEventMap[T]) => boolean;
 
@@ -23,7 +25,6 @@ export type WithEvents = {
   deregisterEvents(): void;
 };
 
-type AnonymousClass<Mixin> = new (...args: any[]) => {} & Mixin;
 
 /**
  * A mixin function that adds event handling capabilities to a class.

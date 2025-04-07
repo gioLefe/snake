@@ -19,7 +19,10 @@ export class UIButton extends withEvents(UILabel) {
         this.addCallback<"mousemove">(
             "mousemove",
             MOUSE_ENTER_ID,
-            () => { this.playBtnMouseEnter(); this.mouseEnterCallbacks.forEach((callback) => callback()) },
+            () => {
+                this.playBtnMouseEnter();
+                this.mouseEnterCallbacks.forEach((callback) => callback())
+            },
             (ev) =>
                 isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox()) &&
                 this.mouseOver === false

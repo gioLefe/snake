@@ -1,6 +1,7 @@
 import { CanvasScene2D } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
 import { PlayBtn } from "./models/play-btn";
+import { UIButton } from "ui/controls/button";
 
 export const MAIN_MENU_SCENE_ID = "main-menu";
 
@@ -11,11 +12,13 @@ export class MainMenuScene implements CanvasScene2D {
 
   // UI
   title: UILabel;
-  playBtn: UILabel;
+  playBtn: UIButton;
+  // configureBtn: UIButton;
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;
     this.canvas = canvas;
+    
     this.title = new UILabel(
       this.ctx,
       "",
@@ -24,8 +27,8 @@ export class MainMenuScene implements CanvasScene2D {
       { font: "48px Verdana" },
       "I'm a snaaaake",
     );
-    this.title.setFillStyle("#aFF");
-    this.title.setStrokeStyle("#32FFaF");
+    this.title.setTextFillStyle("#aFF");
+    this.title.setTextStrokeStyle("#32FFaF");
 
     this.playBtn = new PlayBtn(
       this.ctx,
@@ -35,8 +38,10 @@ export class MainMenuScene implements CanvasScene2D {
       { font: "48px Verdana" },
       "PLAY",
     );
-    this.playBtn.setFillStyle("#204Fa1");
-    this.playBtn.setStrokeStyle("#00FFad");
+    this.playBtn.setTextFillStyle("#204Fa1");
+    this.playBtn.setTextStrokeStyle("#00FFad");
+
+    // this.configureBtn = new UIButton(this.ctx,"configure",)
   }
 
   init(): void {

@@ -22,10 +22,10 @@ export class PlayBtn extends UIButton {
     this.enableEvent("click")(canvas);
 
     this.mouseEnterCallbacks.push(() => {
-      this.setFillStyle("#a22");
+      this.setTextFillStyle("#a22");
     })
     this.mouseLeaveCallbacks.push(() => {
-      this.setFillStyle("#204Fa1");
+      this.setTextFillStyle("#204Fa1");
     })
   }
   clean(...args: any[]): void {

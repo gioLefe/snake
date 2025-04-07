@@ -1,3 +1,4 @@
+export * from "./anonymous-class"
 export * from "./asset";
 export * from "./game";
 export * from "./bbox";

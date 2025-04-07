@@ -1,7 +1,8 @@
-import { SceneHandler, SceneManager, DIContainer } from "@octo/core";
+import {
+  AudioController, Settings, SceneHandler, SceneManager, DIContainer
+} from "@octo/core";
 import { GameCycle } from "@octo/models";
 import { AssetsHandler, AssetsManager } from "core/assets-manager";
-import { AudioController } from "core/audio-controller";
 
 export const SCENE_MANAGER_DI = "SceneManager";
 export const ASSETS_MANAGER_DI = "AsetsManager";
@@ -17,6 +18,7 @@ export abstract class Game implements GameCycle {
 
   protected sceneManager: SceneHandler | undefined;
   protected assetsManager: AssetsHandler | undefined;
+  protected settings: Settings | undefined
 
   private debug: { init: boolean; update: boolean; render: boolean } = {
     init: false,
@@ -52,13 +54,13 @@ export abstract class Game implements GameCycle {
     this.deltaTime = 0;
     this.frameInterval - 1000 / fps;
 
-    this.init(this.ctx);
+    this.init();
   }
   clean(...args: any) {
     throw new Error("Method not implemented.");
   }
 
-  init(ctx: CanvasRenderingContext2D): void {
+  init(): void {
     if (this.debug.init) {
       console.log(`%c *** Init`, `background:#020; color:#adad00`);
     }
@@ -76,6 +78,10 @@ export abstract class Game implements GameCycle {
     this.diContainer.register<AudioController>(
       AudioController.AUDIO_CONTROLLER_DI,
       new AudioController(),
+    );
+    this.diContainer.register<Settings>(
+      Settings.SETTINGS_DI,
+      new Settings(),
     );
   }
 
