@@ -1,5 +1,10 @@
 import {
-  AudioController, Settings, SceneHandler, SceneManager, DIContainer
+  AudioController,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  DIContainer,
+  SceneHandler, SceneManager,
+  Settings
 } from "@octo/core";
 import { GameCycle } from "@octo/models";
 import { AssetsHandler, AssetsManager } from "core/assets-manager";
@@ -39,6 +44,9 @@ export abstract class Game implements GameCycle {
       );
       throw Error();
     }
+    this.settings?.set(CANVAS_WIDTH, canvasWidth);
+    this.settings?.set(CANVAS_HEIGHT, canvasHeight);
+
     this.canvas = canvas;
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;

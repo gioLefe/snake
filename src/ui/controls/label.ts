@@ -1,10 +1,10 @@
-import { BoundingBox, GameObject } from "@octo/models";
+import { BoundingBox, GameObject, Vec2 } from "@octo/models";
 import { FillStrokeStyle, getTextBBox } from "@octo/ui/canvas";
 
 export class UILabel extends GameObject<CanvasRenderingContext2D> {
   id: string | undefined;
 
-  private text: string;
+  protected text: string;
   private readonly DEFAULT_TEXT_STYLE: CanvasTextDrawingStyles = {
     direction: "inherit",
     font: "10px sans-serif",
@@ -17,22 +17,21 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     textRendering: "auto",
     wordSpacing: "normal",
   };
-  private textMetric: TextMetrics | undefined;
-  private textStyle: CanvasTextDrawingStyles = this.DEFAULT_TEXT_STYLE;
-  private textFillStyle: FillStrokeStyle | undefined = "#000";
-  private textStrokeStyle: FillStrokeStyle | undefined = "#000";
+  protected textStyle: CanvasTextDrawingStyles = this.DEFAULT_TEXT_STYLE;
+  protected textFillStyle: FillStrokeStyle | undefined = "#000";
+  protected textStrokeStyle: FillStrokeStyle | undefined = "#000";
 
   constructor(
     ctx: CanvasRenderingContext2D,
     id: string,
-    posX: number,
-    posY: number,
+    posX?: number,
+    posY?: number,
     textStyle?: Partial<CanvasTextDrawingStyles>,
     text?: string,
   ) {
     super(ctx);
     this.id = id;
-    this.position = { x: posX, y: posY };
+    this.position = { x: posX ?? 0, y: posY ?? 0 };
     if (textStyle !== undefined) {
       this.textStyle = { ...this.textStyle, ...textStyle };
     }
@@ -55,27 +54,11 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
       return;
     }
 
-    //TODO add direction
-    this.ctx.font = this.textStyle?.font ?? "20px Verdana";
-    //TODO addfontKerning
-    //TODO addfontStretch
-    //TODO addfontVariantCaps
-    //TODO addletterSpacing
-    this.ctx.textAlign = this.textStyle?.textAlign ?? "left";
-    this.ctx.textBaseline = this.textStyle?.textBaseline ?? "alphabetic";
-    //TODO add textRendering
-    //TODO add wordSpacing
+    this.applyStyles()
 
     this.ctx.moveTo(this.position?.x, this.position.y);
-    if (this.textStrokeStyle !== undefined) {
-      this.ctx.strokeStyle = this.textStrokeStyle;
-      this.ctx.strokeText(this.text, this.position.x, this.position.y);
-    }
-    if (this.textFillStyle !== undefined) {
-      this.ctx.fillStyle = this.textFillStyle;
-      this.ctx.fillText(this.text, this.position.x, this.position.y);
-    }
-
+    this.ctx.strokeText(this.text, this.position.x, this.position.y);
+    this.ctx.fillText(this.text, this.position.x, this.position.y);
   }
   clean(...args: any) {
     super.clean(args);
@@ -85,8 +68,21 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     this.text = text;
   }
 
-  getSize(): TextMetrics | undefined {
-    return this.textMetric;
+  getSize(): Vec2<number> | undefined {
+    if (this.textFillStyle === undefined || this.textStrokeStyle === undefined) {
+      return;
+    }
+
+    this.applyStyles()
+    const textMetrics = this.ctx.measureText(this.text);
+    
+    if (textMetrics === undefined) {
+      return undefined;
+    }
+    return {
+      x: textMetrics.width,
+      y: textMetrics?.fontBoundingBoxAscent + textMetrics.fontBoundingBoxDescent
+    }
   }
   getBBox(): BoundingBox<number> {
     return this.bbox;
@@ -100,5 +96,25 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
   }
   setTextStyle(textStyle: CanvasTextDrawingStyles) {
     this.textStyle = textStyle
+  }
+
+  protected applyStyles() {
+    //TODO add direction
+    this.ctx.font = this.textStyle?.font ?? "20px Verdana";
+    //TODO addfontKerning
+    //TODO addfontStretch
+    //TODO addfontVariantCaps
+    //TODO addletterSpacing
+    this.ctx.textAlign = this.textStyle?.textAlign ?? "left";
+    this.ctx.textBaseline = this.textStyle?.textBaseline ?? "alphabetic";
+    //TODO add textRendering
+    //TODO add wordSpacing
+
+    if (this.textStrokeStyle !== undefined) {
+      this.ctx.strokeStyle = this.textStrokeStyle;
+    }
+    if (this.textFillStyle !== undefined) {
+      this.ctx.fillStyle = this.textFillStyle;
+    }
   }
 }

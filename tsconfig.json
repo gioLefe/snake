@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "noImplicitAny": true,
     "baseUrl": "./src",
     "paths": {
       "@octo/core": ["core"],

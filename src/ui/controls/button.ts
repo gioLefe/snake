@@ -8,8 +8,8 @@ const MOUSE_LEAVE_ID = "uiButton-leave";
 export class UIButton extends withEvents(UILabel) {
     protected mouseOver = false;
 
-    protected mouseEnterCallbacks: Function[] = [];
-    protected mouseLeaveCallbacks: Function[] = [];
+    private mouseEnterCallbacks: Function[] = [];
+    private mouseLeaveCallbacks: Function[] = [];
 
     init(
         canvas: HTMLCanvasElement,
@@ -32,12 +32,19 @@ export class UIButton extends withEvents(UILabel) {
 
     clean(...args: any): void {
         super.clean()
+        this.deregisterEvents();
         this.removeCallback(MOUSE_ENTER_ID);
         this.removeCallback(MOUSE_LEAVE_ID);
     }
 
+    addMouseEnterCallback = (ev: Function) => {
+        this.mouseEnterCallbacks.push(ev)
+    }
+    addMouseLeaveCallback = (ev: Function) => {
+        this.mouseLeaveCallbacks.push(ev)
+    }
+
     private playBtnMouseEnter() {
-        // this.setFillStyle("#a22");
         this.mouseOver = true;
         this.addCallback<"mousemove">(
             "mousemove",
@@ -51,7 +58,6 @@ export class UIButton extends withEvents(UILabel) {
     }
 
     private playBtnMouseLeave() {
-        // this.setFillStyle("#204Fa1");
         this.mouseOver = false;
         this.removeCallback(MOUSE_LEAVE_ID);
     }

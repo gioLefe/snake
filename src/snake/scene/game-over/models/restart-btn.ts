@@ -20,19 +20,12 @@ export class RestartBtn extends UIButton {
       (ev) => isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox())
     );
     this.enableEvent("click")(canvas);
-
-    this.mouseEnterCallbacks.push(() => {
-      this.setTextFillStyle('rgb(0, 92, 3)')
-    })
-    this.mouseLeaveCallbacks.push(() => {
-      this.setTextFillStyle('#204Fa1')
-    })
   }
 
   clean(...args: any): void {
     super.clean();
-    this.abortControllers.forEach((a) => a.abort());
     this.removeCallback(MOUSE_CLICK);
+    this.deregisterEvents()
   }
 
   private restartBtnClick() {

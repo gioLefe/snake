@@ -109,10 +109,11 @@ export class ClassicGameScene
     };
 
     // TODO: - Snake colliding with itself
+    
 
     // - Snake colliding with screen borders
     if (headPos.x < 0 || headPos.x > this.canvas.width || headPos.y < 0 || headPos.y > this.canvas.height) {
-      this.die()
+      this.playerLose()
       return;
     }
 
@@ -241,9 +242,11 @@ export class ClassicGameScene
     };
   }
 
-  private die() {
+  private playerLose() {
     this.audioController.play(this.assetsManager.find<SoundAsset>('snake-death')?.source)
     this.gameOver = true;
+    // TODO Disable current scene events before changing to game_over
+
     this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
   }
 }

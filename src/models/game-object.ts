@@ -26,4 +26,6 @@ export abstract class GameObject<T = GraphicContext> implements GameCycle {
   getPosition(): Vec2<number> {
     return this.position;
   }
+
+  getSize(): Vec2<number> | undefined { return undefined }
 }
