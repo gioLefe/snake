@@ -1,4 +1,11 @@
-import { angleBetween, createVector, toPrecisionNumber } from "@octo/helpers";
+import {
+  angleBetween,
+  calculateNormals,
+  checkSATCollision,
+  createVector,
+  toPrecisionNumber,
+  WorldPolygon,
+} from "@octo/helpers";
 import { GameObject, LinkedList, Vec2 } from "@octo/models";
 import { DEFAULT_POLYGON_SIZE } from "snake/constants";
 import { Pivot, pivotComparator } from "../../models/pivot";
@@ -16,6 +23,8 @@ export type SteerDirection = {
 };
 
 const DEBUG = false;
+const HEAD_SEGMENT_COLOR = "#86a04e";
+const SEGMENT_COLOR = "#576c1a";
 
 export class Snake extends GameObject<CanvasRenderingContext2D> {
   id: string;
@@ -27,10 +36,11 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
   private speed: number = 350;
   private turbonOn: boolean = false;
 
-  private maxSteerAngle = 0.3;
+  private maxSteerAngle = 0.2;
   private targetPoint: Vec2<number> | undefined = undefined;
 
   private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
+  private headWorldPolygon: WorldPolygon | undefined;
 
   constructor(ctx: CanvasRenderingContext2D, id: string) {
     super(ctx);
@@ -52,7 +62,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       {
         sideLength: DEFAULT_POLYGON_SIZE,
         numSides: 10,
-        color: "#86a04e",
+        color: HEAD_SEGMENT_COLOR,
         outline: true,
       },
     );
@@ -77,7 +87,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
         {
           sideLength: this.calcPolygonSize(i, this.length),
           numSides: 10,
-          color: "#576c1a",
+          color: SEGMENT_COLOR,
           outline: true,
         },
       );
@@ -105,47 +115,60 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     // Check if there is a target point to steer towards to (i.e: Mouse movement)
     const angleToTarget = this.calcHeadTargetAngle(this.targetPoint);
     if (angleToTarget !== 0) {
-      let steerAngle = this.maxSteerAngle * (angleToTarget > 0 ? -1 : 1);
+      let angleFactor = angleToTarget > 0 ? -1 : 1;
+      let steerAngle: number = 0;
+
       if (Math.abs(angleToTarget - Math.PI) < this.maxSteerAngle) {
-        steerAngle =
-          Math.abs(angleToTarget - Math.PI) * (angleToTarget > 0 ? -1 : 1);
+        steerAngle = Math.abs(angleToTarget - Math.PI) * angleFactor;
         this.targetPoint = undefined;
+      } else {
+        steerAngle = this.maxSteerAngle * angleFactor;
       }
+
       this.steer(steerAngle);
     }
 
+    const distance = speed * deltaTime;
     const headDistanceDelta: Vec2<number> = createVector(
       this.direction,
-      speed * deltaTime,
+      distance,
     );
     head.setPosition({
       x: head.getPosition().x + headDistanceDelta.x,
       y: head.getPosition().y + headDistanceDelta.y,
     });
+    this.headWorldPolygon = this.segments[0].getWorldPolygon();
 
     for (let i = 1; i < this.length; i++) {
-      this.segments[i].update(deltaTime, speed * deltaTime);
+      this.segments[i].update(deltaTime, distance);
     }
   }
 
   steer(radiants: number) {
-    const headBit = this.segments[0];
+    const headSegment: Segment = this.segments[0];
 
     // Use % PI*2 to simplify the direction number
     this.direction = (this.direction + radiants) % (Math.PI * 2);
-    headBit.setDirection(this.direction);
-    headBit.rotate(this.direction);
+    headSegment.setDirection(this.direction);
+    headSegment.rotate(this.direction);
 
-    const sPos = headBit.getPosition();
+    const sPos = headSegment.getPosition();
     const pivot: Pivot = {
       position: { x: sPos.x, y: sPos.y },
       direction: this.direction,
     };
     const nodePivot = this.pivots.append(pivot);
+
+    headSegment.polygon.normals = calculateNormals(headSegment.polygon.points);
     for (let i = 1; i < this.segments.length; i++) {
-      if (this.segments[i].getNextPivot() === undefined) {
-        this.segments[i].setNextPivot(nodePivot);
+      this.segments[i].polygon.normals = calculateNormals(
+        this.segments[i].polygon.points,
+      );
+
+      if (this.segments[i].getNextPivot() !== undefined) {
+        continue;
       }
+      this.segments[i].setNextPivot(nodePivot);
     }
   }
   steerTo(point: Vec2<number>): void {
@@ -204,7 +227,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
             this.length,
           ),
           numSides: 10,
-          color: "#576c1a",
+          color: SEGMENT_COLOR,
           outline: true,
         },
       ),
@@ -213,6 +236,26 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     newBit.setNextPivot(previousBit.getNextPivot());
     newBit.setTail(true);
     newBit.init(this.ctx!);
+    this.segments.forEach(
+      (s, i) => (s.polygon.sideLength = this.calcPolygonSize(i, this.length)),
+    );
+  }
+  collidesWithItself(): boolean {
+    if (!this.headWorldPolygon) {
+      return false;
+    }
+    // Snake colliding with itself ( giv efor granted is impossible head collides with first 2 polygons)
+    for (let i = 3; i < this.length; i++) {
+      if (
+        checkSATCollision(
+          this.headWorldPolygon,
+          this.segments[i].getWorldPolygon(),
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private calcHeadTargetAngle(point: Vec2<number> | undefined): number {
@@ -237,11 +280,11 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       case length - 5:
       case length - 4:
       case length - 3:
-        return DEFAULT_POLYGON_SIZE - 1;
+        return DEFAULT_POLYGON_SIZE - 2;
       case length - 2:
-        return DEFAULT_POLYGON_SIZE - 3;
+        return DEFAULT_POLYGON_SIZE - 6;
       case length - 1:
-        return DEFAULT_POLYGON_SIZE - 5;
+        return DEFAULT_POLYGON_SIZE - 7;
 
       default:
         return DEFAULT_POLYGON_SIZE;

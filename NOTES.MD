@@ -15,9 +15,12 @@
 
 TODO:
 - add easing functions
+- panel: provide a way to move a cursor with keyboard to select an item in the panel (use withEvents)
 - collision detection:
-    - snake head with body (quadtree)
     - optimization of pivot detection
 
 ONGOING:
-- panel: provide a way to move a cursor with keyboard to select an item in the panel (use withEvents)
+
+
+LEFT TODO:
+- quadtree implementations

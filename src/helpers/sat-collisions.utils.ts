@@ -14,7 +14,7 @@ export function checkSATCollision(
     return false;
   }
   for (let z = 0; z < polygonA.normals.length; z++) {
-    // Transform polygons points to space coordinates
+    // 1. Transform polygons points to space coordinates
     const polAVertices = polygonA.points.map((point) => ({
       x: point.x + polygonA.worldCoordinates.x,
       y: point.y + polygonA.worldCoordinates.y,

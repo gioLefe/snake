@@ -1,13 +1,13 @@
-import { AssetsHandler, DIContainer, SceneHandler, AudioController } from "@octo/core";
-import { ASSETS_MANAGER_DI, CanvasScene2D, SoundAsset, MinMax, SCENE_MANAGER_DI, Vec2 } from "@octo/models";
+import { AssetsHandler, AudioController, DIContainer, SceneHandler } from "@octo/core";
+import { createVector, randomIntFromInterval } from "@octo/helpers";
+import { ASSETS_MANAGER_DI, CanvasScene2D, MinMax, QuadTree, SCENE_MANAGER_DI, SoundAsset, Vec2 } from "@octo/models";
 import { withEvents } from "@octo/ui";
 import { Cookie, Pickup, Snake } from "../../models";
+import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
 import {
   CLASSIC_GAME_ASSETS,
   initSnake,
 } from "./classic-game-init.scene";
-import { createVector, randomIntFromInterval } from "@octo/helpers";
-import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
 const CANVAS_BG_COLOR = "#afd7db";
@@ -108,8 +108,11 @@ export class ClassicGameScene
       y: headPos.y + headDistanceDelta.y * deltaTime,
     };
 
-    // TODO: - Snake colliding with itself
-    
+    // Snake colliding with itself
+    if (this.playerSnake.collidesWithItself()) {
+      this.playerLose();
+    }
+
 
     // - Snake colliding with screen borders
     if (headPos.x < 0 || headPos.x > this.canvas.width || headPos.y < 0 || headPos.y > this.canvas.height) {
@@ -250,3 +253,5 @@ export class ClassicGameScene
     this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
   }
 }
+
+

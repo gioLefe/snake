@@ -4,6 +4,7 @@ import {
   diffVectors,
   renderPolygon,
   rotatePolygon,
+  WorldPolygon,
 } from "@octo/helpers";
 import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
 
@@ -95,6 +96,9 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
 
   getSideLength(): number {
     return this.polygon.sideLength;
+  }
+  getWorldPolygon(): WorldPolygon {
+    return { ...this.polygon, worldCoordinates: { x: this.position.x, y: this.position.y } }
   }
 
   private moveToNextPosition(distance: number): void {

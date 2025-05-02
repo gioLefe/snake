@@ -27,11 +27,11 @@ export function renderPolygon(
     return;
   }
   if (polygon.points.length < 2) {
-    console.warn("Too few points , can' draw polygon");
+    console.warn("Too few points , can't draw polygon ");
     return;
   }
 
-  // Move to the first point, calculated as the origin summed to the first point ocordinates
+  // Move to the first point, calculated as the origin summed to the first point coordinates
   const origin: Vec2<number> = {
     x: options.worldCoordinates.x + polygon.points[0].x,
     y: options.worldCoordinates.y + +polygon.points[0].y,
@@ -112,7 +112,7 @@ export function createPolygon(defaults: Partial<Polygon> = {}): Polygon {
       defaults.numSides ?? 3,
       defaults.sideLength ?? 10,
     ),
-    sideLength: defaults.sideLength ?? 10,
+    sideLength: defaults.sideLength ?? 22,
   } as Polygon;
 }
 
@@ -134,7 +134,7 @@ export function rotatePolygon(polygon: Polygon, radiants: number): Polygon {
   };
 }
 
-export function calculateNormals(points: Vec2<number>[]) {
+export function calculateNormals(points: Vec2<number>[]): Vec2<number>[] {
   return calculateEdgesPerpendiculars(points).reduce(
     (accumulation: Vec2<number>[], current: Vec2<number>) => {
       return accumulation.some(
@@ -180,7 +180,7 @@ export function calculateEdgesPerpendiculars(
     // Normalize the perpendicular axis
     const length = Math.sqrt(
       perpendicularAxis.x * perpendicularAxis.x +
-        perpendicularAxis.y * perpendicularAxis.y,
+      perpendicularAxis.y * perpendicularAxis.y,
     );
     perpendicularAxis.x /= length;
     perpendicularAxis.y /= length;
