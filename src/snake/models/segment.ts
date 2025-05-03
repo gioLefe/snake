@@ -4,7 +4,6 @@ import {
   diffVectors,
   renderPolygon,
   rotatePolygon,
-  WorldPolygon,
 } from "@octo/helpers";
 import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
 
@@ -14,7 +13,7 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     numSides: 0,
     points: [],
   };
-  private direction: number = 0;
+
   private nextPivot: LinkedListNode<Pivot> | undefined;
   private popPivotFn: () => Pivot | undefined;
   private isTail = false;
@@ -40,34 +39,20 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     });
     this.rotate(this.direction);
   }
-  init(...args: any) {
+  override init(...args: any) {
     super.init(args);
   }
-  render(...args: any): void {
+  override render(...args: any): void {
     super.render(args);
     renderPolygon(this.polygon, this.ctx!, { worldCoordinates: this.position });
   }
-  clean(...args: any) {
+  override clean(...args: any) {
     super.clean(args);
   }
 
-  update(deltaTime: number, distance: number): void {
+  override update(deltaTime: number, distance: number): void {
     super.update(deltaTime);
     this.moveToNextPosition(distance);
-  }
-
-  getPosition(): Vec2<number> {
-    return this.position;
-  }
-  setPosition(value: Vec2<number>): void {
-    this.position = value;
-  }
-
-  getDirection(): number {
-    return this.direction;
-  }
-  setDirection(value: number): void {
-    this.direction = value;
   }
 
   IsTail(): boolean {
@@ -96,9 +81,6 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
 
   getSideLength(): number {
     return this.polygon.sideLength;
-  }
-  getWorldPolygon(): WorldPolygon {
-    return { ...this.polygon, worldCoordinates: { x: this.position.x, y: this.position.y } }
   }
 
   private moveToNextPosition(distance: number): void {

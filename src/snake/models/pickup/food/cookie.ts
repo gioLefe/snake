@@ -7,7 +7,7 @@ import { Snake } from "../../snake";
 const DEBUG: boolean = true;
 
 export class Cookie extends Food {
-  value = 1;
+  override value = 1;
   image: ImageAsset | undefined;
   resReady = false;
   assetsManager =
@@ -23,13 +23,13 @@ export class Cookie extends Food {
     worldCoordinates?: Vec2<number>,
   ) {
     super(ctx, id);
-    this.position = worldCoordinates;
+    this.position = worldCoordinates ?? { x: 0, y: 0 };
     this.image = this.assetsManager.find("rat") as ImageAsset;
     this.width = width ? width : this.image ? this.image.source.width : 0;
     this.height = height ? height : this.image ? this.image.source.height : 0;
   }
 
-  onPickup(...args: any[]): void {
+  override onPickup(...args: any[]): void {
     const snake = args.find(Snake.isSnake);
     if (snake === undefined) {
       throw new Error("snake is not defined");
@@ -39,11 +39,11 @@ export class Cookie extends Food {
     // TODO trigger side effects: Play sound, graphic effects, etc.
   }
 
-  init(ctx: CanvasRenderingContext2D, ...args: any): void {
+  override init(ctx: CanvasRenderingContext2D, ...args: any): void {
     this.ctx = ctx;
     this.updateBbox();
   }
-  render(...args: any): void {
+  override render(...args: any): void {
     if (this.ctx === undefined) {
       throw new Error("ctx is undefined");
     }
@@ -77,12 +77,12 @@ export class Cookie extends Food {
     }
   }
 
-  setWidth(width: number) {
+  override setWidth(width: number) {
     super.setWidth(width);
     this.updateBbox();
   }
 
-  setHeight(height: number) {
+  override setHeight(height: number) {
     super.setHeight(height);
     this.updateBbox();
   }

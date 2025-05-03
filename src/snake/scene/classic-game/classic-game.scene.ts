@@ -9,10 +9,9 @@ import {
   ASSETS_MANAGER_DI,
   CanvasScene2D,
   MinMax,
-  QuadTree,
   SCENE_MANAGER_DI,
   SoundAsset,
-  Vec2,
+  Vec2
 } from "@octo/models";
 import { withEvents } from "@octo/ui";
 import { Cookie, Pickup, Snake } from "../../models";
@@ -114,7 +113,7 @@ export class ClassicGameScene
     }
 
     // Collision detection
-    const headSideLength = this.playerSnake.getHeadSize();
+    const headSideLength = this.playerSnake.getHeadSideLength();
     const headDistanceDelta: Vec2<number> = createVector(
       this.playerSnake.getDirection(),
       this.playerSnake.getSpeed(),

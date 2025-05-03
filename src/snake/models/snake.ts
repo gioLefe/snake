@@ -3,6 +3,7 @@ import {
   calculateNormals,
   checkSATCollision,
   createVector,
+  getWorldPolygon,
   toPrecisionNumber,
   WorldPolygon,
 } from "@octo/helpers";
@@ -27,10 +28,10 @@ const HEAD_SEGMENT_COLOR = "#86a04e";
 const SEGMENT_COLOR = "#576c1a";
 
 export class Snake extends GameObject<CanvasRenderingContext2D> {
-  id: string;
+  override id: string;
+  protected override direction: number = Math.random() % (Math.PI * 2);
   private readonly BIT_DISTANCE = 20;
   private length: number = 10;
-  private direction: number = Math.random() % (Math.PI * 2);
   private segments: Segment[] = [];
   private turboSpeed: number = 500;
   private speed: number = 350;
@@ -46,7 +47,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     super(ctx);
     this.id = id;
   }
-  init(args: SnakeInitParam) {
+  override init(args: SnakeInitParam) {
     if (args?.initialDirection) {
       this.direction = args.initialDirection;
     }
@@ -94,10 +95,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       this.segments[i].init();
     }
   }
-  clean(...args: any) {
+  override clean(...args: any) {
     console.warn("Method not implemented.");
   }
-  render(...args: any): void {
+  override render(...args: any): void {
     super.render(args);
     for (let i = this.segments.length - 1; i >= 0; i--) {
       this.segments[i].render();
@@ -107,7 +108,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       this.renderDebug(this.ctx);
     }
   }
-  update(deltaTime: number, ...args: any) {
+  override update(deltaTime: number, ...args: any) {
     super.update(deltaTime, args);
     const speed = this.getSpeed();
     const head = this.segments[0];
@@ -128,19 +129,23 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       this.steer(steerAngle);
     }
 
-    const distance = speed * deltaTime;
+    const distanceToCover = speed * deltaTime;
     const headDistanceDelta: Vec2<number> = createVector(
       this.direction,
-      distance,
+      distanceToCover,
     );
     head.setPosition({
       x: head.getPosition().x + headDistanceDelta.x,
       y: head.getPosition().y + headDistanceDelta.y,
     });
-    this.headWorldPolygon = this.segments[0].getWorldPolygon();
+
+    this.headWorldPolygon = getWorldPolygon(
+      this.segments[0].polygon,
+      this.segments[0].getPosition(),
+    );
 
     for (let i = 1; i < this.length; i++) {
-      this.segments[i].update(deltaTime, distance);
+      this.segments[i].update(deltaTime, distanceToCover);
     }
   }
 
@@ -181,13 +186,13 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
   getHeadPos(): Vec2<number> {
     return this.segments[0].getPosition();
   }
-  getDirection(): number {
+  override getDirection(): number {
     return this.segments[0].getDirection();
   }
   getSpeed(): number {
     return this.turbonOn ? this.turboSpeed : this.speed;
   }
-  getHeadSize(): number {
+  getHeadSideLength(): number {
     return this.segments[0].getSideLength();
   }
   popPivot = (): Pivot | undefined => {
@@ -249,7 +254,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       if (
         checkSATCollision(
           this.headWorldPolygon,
-          this.segments[i].getWorldPolygon(),
+          getWorldPolygon(
+            this.segments[i].polygon,
+            this.segments[i].getPosition(),
+          ),
         )
       ) {
         return true;

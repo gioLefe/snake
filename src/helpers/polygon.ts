@@ -1,4 +1,4 @@
-import { getVectorPerpendicular } from "@octo/helpers";
+import { getVectorPerpendicular, WorldPolygon } from "@octo/helpers";
 import { Polygon } from "../models/polygon";
 import { Vec2 } from "../models/vec";
 import { BoundingBox } from "@octo/models";
@@ -230,4 +230,11 @@ export function getBBoxRect(
       { x: buondingBox.nw.x, y: buondingBox.se.y },
     ],
   } as Polygon;
+}
+
+export function getWorldPolygon(polygon : Polygon, position: Vec2<number>): WorldPolygon {
+  return {
+    ...polygon,
+    worldCoordinates: { x: position.x, y: position.y },
+  };
 }

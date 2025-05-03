@@ -10,15 +10,16 @@ export abstract class GameObject<T = GraphicContext> implements GameCycle {
     nw: { x: 0, y: 0 },
     se: { x: 0, y: 0 },
   };
+  protected direction: number = 0;
 
   constructor(ctx: T) {
     this.ctx = ctx;
   }
 
-  init(...args: any) { }
-  update(deltaTime: number, ...args: any) { }
-  render(...args: any) { }
-  clean(...args: any) { }
+  init(...args: any) {}
+  update(deltaTime: number, ...args: any) {}
+  render(...args: any) {}
+  clean(...args: any) {}
 
   setPosition(value: Vec2<number>): void {
     this.position = value;
@@ -27,5 +28,14 @@ export abstract class GameObject<T = GraphicContext> implements GameCycle {
     return this.position;
   }
 
-  getSize(): Vec2<number> | undefined { return undefined }
+  getSize(): Vec2<number> | undefined {
+    return undefined;
+  }
+
+  getDirection(): number {
+    return this.direction;
+  }
+  setDirection(value: number): void {
+    this.direction = value;
+  }
 }
