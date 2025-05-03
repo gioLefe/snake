@@ -1,13 +1,23 @@
-import { AssetsHandler, AudioController, DIContainer, SceneHandler } from "@octo/core";
+import {
+  AssetsHandler,
+  AudioController,
+  DIContainer,
+  SceneHandler,
+} from "@octo/core";
 import { createVector, randomIntFromInterval } from "@octo/helpers";
-import { ASSETS_MANAGER_DI, CanvasScene2D, MinMax, QuadTree, SCENE_MANAGER_DI, SoundAsset, Vec2 } from "@octo/models";
+import {
+  ASSETS_MANAGER_DI,
+  CanvasScene2D,
+  MinMax,
+  QuadTree,
+  SCENE_MANAGER_DI,
+  SoundAsset,
+  Vec2,
+} from "@octo/models";
 import { withEvents } from "@octo/ui";
 import { Cookie, Pickup, Snake } from "../../models";
 import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
-import {
-  CLASSIC_GAME_ASSETS,
-  initSnake,
-} from "./classic-game-init.scene";
+import { CLASSIC_GAME_ASSETS, initSnake } from "./classic-game-init.scene";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
 const CANVAS_BG_COLOR = "#afd7db";
@@ -18,8 +28,9 @@ const KEY_UP_EVENT_ID = "ClassicGameScene-keyup";
 const FOOD_SIZE = 24;
 
 export class ClassicGameScene
-  extends withEvents(class { })
-  implements CanvasScene2D {
+  extends withEvents(class {})
+  implements CanvasScene2D
+{
   id: string = CLASSIC_GAME_SCENE_ID;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -27,7 +38,9 @@ export class ClassicGameScene
     DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
   sceneManager =
     DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
-  audioController = DIContainer.getInstance().resolve<AudioController>(AudioController.AUDIO_CONTROLLER_DI);
+  audioController = DIContainer.getInstance().resolve<AudioController>(
+    AudioController.AUDIO_CONTROLLER_DI,
+  );
 
   playerSnake: Snake | undefined;
   pickups: Pickup[] = [];
@@ -45,16 +58,16 @@ export class ClassicGameScene
     super();
     this.ctx = ctx;
     this.canvas = canvas;
-    this.initialWorldCoordinates = initialWorldCoordinates
+    this.initialWorldCoordinates = initialWorldCoordinates;
   }
 
   async init(): Promise<any> {
     this.gameOver = false;
     this.score = 0;
-    this.pickups = []
+    this.pickups = [];
 
     if (this.initialWorldCoordinates === undefined) {
-      console.warn('initial world coordinates are not found');
+      console.warn("initial world coordinates are not found");
     }
     this.playerSnake = initSnake(this.ctx, {
       worldCoordinates: {
@@ -86,9 +99,13 @@ export class ClassicGameScene
     );
     this.enableEvent("keyup")(window);
 
-    return Promise.allSettled(this.assetsManager.add(CLASSIC_GAME_ASSETS)).then(() => {
-      this.audioController.play(this.assetsManager.find<SoundAsset>('snake-start')?.source)
-    })
+    return Promise.allSettled(this.assetsManager.add(CLASSIC_GAME_ASSETS)).then(
+      () => {
+        this.audioController.play(
+          this.assetsManager.find<SoundAsset>("snake-start")?.source,
+        );
+      },
+    );
   }
 
   update(deltaTime: number): void {
@@ -113,10 +130,14 @@ export class ClassicGameScene
       this.playerLose();
     }
 
-
     // - Snake colliding with screen borders
-    if (headPos.x < 0 || headPos.x > this.canvas.width || headPos.y < 0 || headPos.y > this.canvas.height) {
-      this.playerLose()
+    if (
+      headPos.x < 0 ||
+      headPos.x > this.canvas.width ||
+      headPos.y < 0 ||
+      headPos.y > this.canvas.height
+    ) {
+      this.playerLose();
       return;
     }
 
@@ -152,7 +173,9 @@ export class ClassicGameScene
         snakeNextPos.y <= pickupPos.y + pickup.getHeight() + headSideLength
       ) {
         pickup.onPickup(this.playerSnake);
-        this.audioController.play(this.assetsManager.find<SoundAsset>('snake-eat')?.source)
+        this.audioController.play(
+          this.assetsManager.find<SoundAsset>("snake-eat")?.source,
+        );
 
         this.pickups[i].clean();
         this.pickups.splice(i, 1);
@@ -183,15 +206,15 @@ export class ClassicGameScene
   }
 
   clean(...args: any) {
-    this.removeCallback(KEY_DOWN_EVENT_ID)
-    this.removeCallback(KEY_UP_EVENT_ID)
-    this.removeCallback(MOUSE_MOVE_EVENT_ID)
+    this.removeCallback(KEY_DOWN_EVENT_ID);
+    this.removeCallback(KEY_UP_EVENT_ID);
+    this.removeCallback(MOUSE_MOVE_EVENT_ID);
     this.abortControllers.forEach((ac) => ac.abort());
   }
 
   async restart() {
-    console.log('restarting classic game scene')
-    this.clean()
+    console.log("restarting classic game scene");
+    this.clean();
     await this.init();
   }
 
@@ -246,12 +269,12 @@ export class ClassicGameScene
   }
 
   private playerLose() {
-    this.audioController.play(this.assetsManager.find<SoundAsset>('snake-death')?.source)
+    this.audioController.play(
+      this.assetsManager.find<SoundAsset>("snake-death")?.source,
+    );
     this.gameOver = true;
     // TODO Disable current scene events before changing to game_over
 
     this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
   }
 }
-
-
