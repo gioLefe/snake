@@ -1,8 +1,8 @@
-import { CanvasScene2D, Vec2 } from "@octo/models";
+import { CanvasScene2D } from "@octo/models";
 import { UILabel } from "@octo/ui/controls";
-import { PlayBtn } from "./models/play-btn";
-import { UIButton } from "ui/controls/button";
+import { UIClickableLabel } from "ui/controls/clickable-label";
 import { UIPanel } from "ui/controls/panel";
+import { PlayBtn } from "./models/play-btn";
 
 export const MAIN_MENU_SCENE_ID = "main-menu";
 
@@ -19,8 +19,8 @@ export class MainMenuScene implements CanvasScene2D {
 
   // UI
   title: UILabel;
-  playBtn: UIButton;
-  configureBtn: UIButton;
+  playBtn: UIClickableLabel;
+  configureBtn: UIClickableLabel;
   panel: UIPanel | undefined;
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -57,7 +57,7 @@ export class MainMenuScene implements CanvasScene2D {
     this.playBtn.setTextFillStyle(this.ITEMS_STROKE_COLOR);
     this.playBtn.setTextStrokeStyle(this.ITEMS_FILL_COLOR);
 
-    this.configureBtn = new UIButton(
+    this.configureBtn = new UIClickableLabel(
       this.ctx,
       "configure",
       undefined,
@@ -78,7 +78,7 @@ export class MainMenuScene implements CanvasScene2D {
     const canvasMiddleWidth = this.canvas?.width / 2
 
     this.panel = new UIPanel(this.ctx);
-    this.panel.setPosition({ x: canvasMiddleWidth - 50, y: canvasMiddleHeight - 200 });
+    this.panel.setPosition({ x: canvasMiddleWidth - 50, y: 0 + 200 });
 
     this.panel.addPanelItem(this.playBtn);
     this.panel.addPanelItem(this.configureBtn)

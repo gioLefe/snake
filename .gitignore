@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 *.xcf
-/images/**/*
+/public/assets/images/**/*

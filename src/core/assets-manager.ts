@@ -1,6 +1,6 @@
 import { ImageAsset, SoundAsset, Tag } from "@octo/models";
 
-export type GameAsset = { id: string; path: string, type: 'IMAGE' | 'AUDIO' };
+export type GameAsset = { id: string; path: string; type: "IMAGE" | "AUDIO" };
 
 export interface AssetsHandler {
   assets: Map<string, ImageAsset | SoundAsset> | undefined;
@@ -15,7 +15,9 @@ export class AssetsManager implements AssetsHandler {
   assets: Map<string, ImageAsset | SoundAsset> = new Map();
 
   add(assetRequests: GameAsset[]): Promise<void>[] {
-    return assetRequests.map((request) => this.createObjectPromise(this, request));
+    return assetRequests.map((request) =>
+      this.createObjectPromise(this, request),
+    );
   }
 
   find<T>(id: string): T | undefined {
@@ -38,7 +40,10 @@ export class AssetsManager implements AssetsHandler {
     this.assets.set(id, a);
   }
 
-  private createObjectPromise(assetManagerHandle: this, assetRequest: GameAsset): Promise<void> {
+  private createObjectPromise(
+    assetManagerHandle: this,
+    assetRequest: GameAsset,
+  ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let obj: HTMLImageElement | HTMLAudioElement;
 
@@ -47,21 +52,28 @@ export class AssetsManager implements AssetsHandler {
         request.open("GET", assetRequest.path, true);
         request.responseType = "arraybuffer";
         request.onload = function () {
-          assetManagerHandle.assets.set(assetRequest.id, { source: request.response, tags: [] });
+          assetManagerHandle.assets.set(assetRequest.id, {
+            source: request.response,
+            tags: [],
+          });
           return resolve();
         };
-        request.send()
+        request.send();
+        return;
       }
-
+      
       obj = new Image();
       obj.onload = function () {
-        assetManagerHandle.assets.set(assetRequest.id, { source: obj as HTMLImageElement, tags: [] });
+        assetManagerHandle.assets.set(assetRequest.id, {
+          source: obj as HTMLImageElement,
+          tags: [],
+        });
         return resolve();
       };
       obj.onerror = function () {
         reject(`cannot load ${assetRequest.id} at ${assetRequest.path}`);
       };
       obj.src = assetRequest.path;
-    })
+    });
   }
 }

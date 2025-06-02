@@ -3,7 +3,8 @@ import { Polygon } from "../models/polygon";
 import { Vec2 } from "../models/vec";
 import { BoundingBox } from "@octo/models";
 
-export interface RenderingPolygonParams {
+export interface RenderingPolygonParams
+  extends Partial<CanvasFillStrokeStyles> {
   strokeColor?: string;
   selectedStrokeColor?: string;
   collisionStrokeColor?: string;
@@ -180,7 +181,7 @@ export function calculateEdgesPerpendiculars(
     // Normalize the perpendicular axis
     const length = Math.sqrt(
       perpendicularAxis.x * perpendicularAxis.x +
-      perpendicularAxis.y * perpendicularAxis.y,
+        perpendicularAxis.y * perpendicularAxis.y,
     );
     perpendicularAxis.x /= length;
     perpendicularAxis.y /= length;
@@ -189,6 +190,43 @@ export function calculateEdgesPerpendiculars(
   }
 
   return perpendiculars;
+}
+
+export function getBBoxRect(
+  buondingBox: BoundingBox<number>,
+  defaults: Partial<Polygon> = {},
+): Polygon {
+  return {
+    color: defaults.color ?? "#ffb3ba",
+    fill: defaults.fill ?? true,
+    outline: defaults.outline ?? true,
+    numSides: 4,
+    points: [
+      { x: buondingBox.nw.x, y: buondingBox.nw.y },
+      { x: buondingBox.se.x, y: buondingBox.nw.y },
+      { x: buondingBox.se.x, y: buondingBox.se.y },
+      { x: buondingBox.nw.x, y: buondingBox.se.y },
+    ],
+  } as Polygon;
+}
+
+export function getWorldPolygon(
+  polygon: Polygon,
+  position: Vec2<number>,
+): WorldPolygon {
+  return {
+    ...polygon,
+    worldCoordinates: { x: position.x, y: position.y },
+  };
+}
+
+export function printWorldPolygonInfo(
+  polygon: WorldPolygon,
+  label = "polygon",
+) {
+  console.log(
+    `${label}: sides: ${polygon.numSides} | center: x:${polygon?.worldCoordinates.x.toFixed(1)}, y:${polygon?.worldCoordinates.y.toFixed(1)} | points: ${polygon.points.forEach((p, i) => `p[${i}]-${p.x}:${p.y},`)} | normals: ${polygon.normals?.forEach((n, i) => `n[${i}]-${n.x}:${n.y},`)}`,
+  );
 }
 
 function generatePolygonPoints(
@@ -212,29 +250,4 @@ function generatePolygonPoints(
   }
 
   return points;
-}
-
-export function getBBoxRect(
-  buondingBox: BoundingBox<number>,
-  defaults: Partial<Polygon> = {},
-): Polygon {
-  return {
-    color: defaults.color ?? "#ffb3ba",
-    fill: defaults.fill ?? true,
-    outline: defaults.outline ?? true,
-    numSides: 4,
-    points: [
-      { x: buondingBox.nw.x, y: buondingBox.nw.y },
-      { x: buondingBox.se.x, y: buondingBox.nw.y },
-      { x: buondingBox.se.x, y: buondingBox.se.y },
-      { x: buondingBox.nw.x, y: buondingBox.se.y },
-    ],
-  } as Polygon;
-}
-
-export function getWorldPolygon(polygon : Polygon, position: Vec2<number>): WorldPolygon {
-  return {
-    ...polygon,
-    worldCoordinates: { x: position.x, y: position.y },
-  };
 }

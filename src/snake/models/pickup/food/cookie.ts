@@ -9,7 +9,6 @@ const DEBUG: boolean = true;
 export class Cookie extends Food {
   override value = 1;
   image: ImageAsset | undefined;
-  resReady = false;
   assetsManager =
     DIContainer.getInstance().resolve<AssetsHandler>(ASSETS_MANAGER_DI);
 
@@ -24,7 +23,7 @@ export class Cookie extends Food {
   ) {
     super(ctx, id);
     this.position = worldCoordinates ?? { x: 0, y: 0 };
-    this.image = this.assetsManager.find("rat") as ImageAsset;
+    this.image = this.assetsManager.find("cookie") as ImageAsset;
     this.width = width ? width : this.image ? this.image.source.width : 0;
     this.height = height ? height : this.image ? this.image.source.height : 0;
   }

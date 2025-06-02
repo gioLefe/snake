@@ -1,5 +1,6 @@
-export * from "./anonymous-class"
+export * from "./anonymous-class";
 export * from "./asset";
+export * from "./canvas-scene";
 export * from "./game";
 export * from "./bbox";
 export * from "./game-cycle";
@@ -8,5 +9,5 @@ export * from "./min-max";
 export * from "./pivot";
 export * from "./polygon";
 export * from "./structs";
+export * from "./sprite";
 export * from "./vec";
-export * from "./canvas-scene";

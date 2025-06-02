@@ -3,8 +3,9 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   DIContainer,
-  SceneHandler, SceneManager,
-  Settings
+  SceneHandler,
+  SceneManager,
+  Settings,
 } from "@octo/core";
 import { GameCycle } from "@octo/models";
 import { AssetsHandler, AssetsManager } from "core/assets-manager";
@@ -23,7 +24,7 @@ export abstract class Game implements GameCycle {
 
   protected sceneManager: SceneHandler | undefined;
   protected assetsManager: AssetsHandler | undefined;
-  protected settings: Settings | undefined
+  protected settingsManager: Settings | undefined;
 
   private debug: { init: boolean; update: boolean; render: boolean } = {
     init: false,
@@ -38,14 +39,9 @@ export abstract class Game implements GameCycle {
     fps: number = 30,
   ) {
     if (canvas === null) {
-      console.error(
-        `%c *** Error, Canvas cannot be null`,
-        `background:#222; color: #FFda55`,
-      );
+      console.error(`%c *** Error, Canvas cannot be null`);
       throw Error();
     }
-    this.settings?.set(CANVAS_WIDTH, canvasWidth);
-    this.settings?.set(CANVAS_HEIGHT, canvasHeight);
 
     this.canvas = canvas;
     this.canvas.width = canvasWidth;
@@ -75,6 +71,7 @@ export abstract class Game implements GameCycle {
 
     this.sceneManager = new SceneManager();
     this.assetsManager = new AssetsManager();
+    this.settingsManager = new Settings();
     this.diContainer.register<SceneHandler>(
       SCENE_MANAGER_DI,
       this.sceneManager,
@@ -89,7 +86,7 @@ export abstract class Game implements GameCycle {
     );
     this.diContainer.register<Settings>(
       Settings.SETTINGS_DI,
-      new Settings(),
+      this.settingsManager,
     );
   }
 
@@ -118,7 +115,7 @@ export abstract class Game implements GameCycle {
     currentScenes.forEach((scene) => scene.render(this.ctx));
   }
 
-  gameLoop(timestamp: number): void {
+  gameLoop = (timestamp: number): void => {
     const elapsed = timestamp - this.lastUpdateTime;
     if (elapsed > this.frameInterval) {
       this.deltaTime = elapsed / 1000; // Convert to
@@ -128,8 +125,8 @@ export abstract class Game implements GameCycle {
       this.render(this.ctx);
     }
 
-    requestAnimationFrame(this.gameLoop.bind(this));
-  }
+    requestAnimationFrame(this.gameLoop);
+  };
 
   start(): void {
     this.lastUpdateTime = performance.now();

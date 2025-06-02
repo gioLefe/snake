@@ -1,42 +1,41 @@
 import {
+  calculateNormals,
   createPolygon,
   createVector,
   diffVectors,
-  renderPolygon,
   rotatePolygon,
+  WorldPolygon,
 } from "@octo/helpers";
-import { GameObject, LinkedListNode, Pivot, Polygon, Vec2 } from "@octo/models";
+import { GameObject, LinkedListNode, Pivot, Sprite, Vec2 } from "@octo/models";
 
-export class Segment extends GameObject<CanvasRenderingContext2D> {
-  polygon: Polygon = {
-    sideLength: 0,
-    numSides: 0,
-    points: [],
-  };
+export class Segment<
+  T extends Sprite,
+> extends GameObject<CanvasRenderingContext2D> {
+  sprite: T | undefined;
 
   private nextPivot: LinkedListNode<Pivot> | undefined;
   private popPivotFn: () => Pivot | undefined;
-  private isTail = false;
+  private isTailSegment = false;
+  private bboxPolygon: WorldPolygon;
 
   constructor(
     ctx: CanvasRenderingContext2D,
     direction: number,
     isTail = false,
+    sprite: T,
     popPivotFn: () => Pivot | undefined,
+    bboxPolygon: WorldPolygon | undefined,
     worldPosition?: Vec2<number>,
-    polygonOptions?: Partial<Polygon>,
   ) {
     super(ctx);
+
     this.popPivotFn = popPivotFn;
-    this.isTail = isTail;
+    this.isTailSegment = isTail;
     this.direction = direction;
     this.position = worldPosition ?? { x: 0, y: 0 };
-    this.polygon = createPolygon({
-      sideLength: polygonOptions?.sideLength,
-      numSides: polygonOptions?.numSides,
-      color: polygonOptions?.color,
-      outline: polygonOptions?.outline,
-    });
+    this.sprite = sprite;
+    this.bboxPolygon =
+      bboxPolygon ?? (createPolygon({ numSides: 4 }) as WorldPolygon);
     this.rotate(this.direction);
   }
   override init(...args: any) {
@@ -44,7 +43,7 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
   }
   override render(...args: any): void {
     super.render(args);
-    renderPolygon(this.polygon, this.ctx!, { worldCoordinates: this.position });
+    this.sprite?.render(this.position);
   }
   override clean(...args: any) {
     super.clean(args);
@@ -52,14 +51,15 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
 
   override update(deltaTime: number, distance: number): void {
     super.update(deltaTime);
+    this.sprite?.update(deltaTime);
     this.moveToNextPosition(distance);
   }
 
-  IsTail(): boolean {
-    return this.isTail;
+  isTail(): boolean {
+    return this.isTailSegment;
   }
   setTail(value: boolean): void {
-    this.isTail = value;
+    this.isTailSegment = value;
   }
 
   popPivot(): Pivot | undefined {
@@ -76,11 +76,19 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
     this.direction = (this.direction + radiants) % (Math.PI * 2);
   }
   rotate(radiants: number): void {
-    this.polygon = rotatePolygon(this.polygon, radiants);
+    this.sprite?.rotate(radiants);
+    this.bboxPolygon = rotatePolygon(
+      this.bboxPolygon,
+      radiants,
+    ) as WorldPolygon;
   }
 
-  getSideLength(): number {
-    return this.polygon.sideLength;
+  getSideLength(): number | undefined {
+    return this.sprite?.getDistanceFromCenterToSide();
+  }
+
+  getBBoxPolygon(): WorldPolygon {
+    return this.bboxPolygon;
   }
 
   private moveToNextPosition(distance: number): void {
@@ -109,7 +117,7 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
         this.setNextPivot(this.nextPivot.next ?? undefined);
 
         // Tail segment is responsible to pop elements from the pivots list in the snake
-        if (this.IsTail()) {
+        if (this.isTail()) {
           this.popPivot();
         }
       } else {
@@ -127,5 +135,19 @@ export class Segment extends GameObject<CanvasRenderingContext2D> {
         y: this.getPosition().y + nextPositionVec.y,
       });
     }
+    this.bboxPolygon.worldCoordinates = {
+      x: this.getPosition().x,
+      y: this.getPosition().y,
+    };
+
+    this.bboxPolygon.normals = calculateNormals(
+      this.bboxPolygon.points.map(
+        (p) =>
+          ({
+            x: p.x + this.getPosition().x,
+            y: p.y + this.getPosition().y,
+          }) as Vec2<number>,
+      ),
+    );
   }
 }

@@ -5,6 +5,8 @@ import { GameCycle, GraphicContext } from "./game-cycle";
 export abstract class GameObject<T = GraphicContext> implements GameCycle {
   id?: string;
   ctx: T;
+  protected width: number = 64;
+  protected height: number = 64;
   protected position: Vec2<number> = { x: 0, y: 0 };
   protected bbox: BoundingBox<number> = {
     nw: { x: 0, y: 0 },
@@ -37,5 +39,18 @@ export abstract class GameObject<T = GraphicContext> implements GameCycle {
   }
   setDirection(value: number): void {
     this.direction = value;
+  }
+
+  getWidth(): number {
+    return this.width;
+  }
+  setWidth(width: number) {
+    this.width = width;
+  }
+  getHeight(): number {
+    return this.height;
+  }
+  setHeight(height: number) {
+    this.height = height;
   }
 }

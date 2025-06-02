@@ -2,7 +2,7 @@ import { BoundingBox, GameObject, Vec2 } from "@octo/models";
 import { FillStrokeStyle, getTextBBox } from "@octo/ui/canvas";
 
 export class UILabel extends GameObject<CanvasRenderingContext2D> {
-  id: string | undefined;
+  override id: string | undefined;
 
   protected text: string;
   private readonly DEFAULT_TEXT_STYLE: CanvasTextDrawingStyles = {
@@ -38,17 +38,17 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     this.text = text ?? "";
   }
 
-  init(...args: any) {
+  override init(...args: any) {
     super.init(...args);
   }
-  update(deltaTime: number, ...args: any) {
+  override update(deltaTime: number, ...args: any) {
     super.update(deltaTime, args);
     if (this.text === undefined || this.position === undefined) {
       return;
     }
     this.bbox = getTextBBox(this.ctx, this.text, this.position);
   }
-  render(...args: any) {
+  override render(...args: any) {
     super.render(args);
     if (this.position === undefined || this.text === undefined) {
       return;
@@ -60,7 +60,7 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     this.ctx.strokeText(this.text, this.position.x, this.position.y);
     this.ctx.fillText(this.text, this.position.x, this.position.y);
   }
-  clean(...args: any) {
+  override clean(...args: any) {
     super.clean(args);
   }
 
@@ -68,7 +68,7 @@ export class UILabel extends GameObject<CanvasRenderingContext2D> {
     this.text = text;
   }
 
-  getSize(): Vec2<number> | undefined {
+  override getSize(): Vec2<number> | undefined {
     if (this.textFillStyle === undefined || this.textStrokeStyle === undefined) {
       return;
     }

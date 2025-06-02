@@ -21,6 +21,6 @@ TODO:
 
 ONGOING:
 
-
-LEFT TODO:
-- quadtree implementations
+KNOWN ISSUES:
+- Collision of the snakehead is not working anymore since an image is used as the head, the bbox is not calculated
+- play button is not returning to its intial state when mouse leaves button

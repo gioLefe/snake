@@ -41,5 +41,5 @@ export interface SceneHandler {
     id: string,
     cleanPreviousState: boolean,
     loadingSceneId?: string,
-  ): void;
+  ): Promise<void>;
 }

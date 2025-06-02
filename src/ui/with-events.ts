@@ -1,11 +1,17 @@
 import { AnonymousClass } from "@octo/models";
 
 export type EventType = keyof HTMLElementEventMap;
-export type TriggerCondition<T extends EventType> = (ev: HTMLElementEventMap[T]) => boolean;
+export type TriggerCondition<T extends EventType> = (
+  ev: HTMLElementEventMap[T],
+) => boolean;
+
+export type AsyncEventCallback = (...args: any[]) => Promise<void>;
+export type EventCallback = (...args: any[]) => void;
 
 export type Callback<T extends EventType> = {
   eventType: T;
-  ev: Function;
+  ev: EventCallback | AsyncEventCallback;
+  blocking: boolean;
   triggerCondition?: TriggerCondition<T>;
 };
 
@@ -15,16 +21,14 @@ export type WithEvents = {
   addCallback<T extends EventType>(
     eventType: T,
     id: string,
-    ev: Function,
+    eventCallback: EventCallback | AsyncEventCallback,
+    blocking: boolean,
     triggerCondition?: TriggerCondition<T>,
   ): void;
-  enableEvent<T>(
-    eventType: T,
-  ): (eventTarget: EventTarget) => void;
+  enableEvent<T>(eventType: T): (eventTarget: EventTarget) => void;
   removeCallback(id: string): void;
   deregisterEvents(): void;
 };
-
 
 /**
  * A mixin function that adds event handling capabilities to a class.
@@ -41,7 +45,10 @@ export function withEvents<T extends AnonymousClass<unknown>>(
      * A map to store event callbacks by their ID.
      * @type {Map<string, Callback>}
      */
-    events: Map<string, Callback<EventType>> = new Map<string, Callback<EventType>>();
+    events: Map<string, Callback<EventType>> = new Map<
+      string,
+      Callback<EventType>
+    >();
 
     /**
      * A list of AbortController instances to manage event listeners.
@@ -55,14 +62,20 @@ export function withEvents<T extends AnonymousClass<unknown>>(
     addCallback<K extends EventType>(
       eventType: K,
       id: string,
-      ev: Function,
+      ev: EventCallback,
+      blocking: boolean,
       triggerCondition?: TriggerCondition<K>,
     ): void {
       if (this.events?.has(id)) {
         console.warn(`event with id ${id} already exists!`);
         return;
       }
-      this.events?.set(id, { eventType, ev, triggerCondition: triggerCondition as TriggerCondition<EventType> });
+      this.events?.set(id, {
+        eventType,
+        ev,
+        blocking,
+        triggerCondition: triggerCondition as TriggerCondition<EventType>,
+      });
     }
 
     /**
@@ -103,14 +116,14 @@ export function withEvents<T extends AnonymousClass<unknown>>(
           this.abortControllers[
             this.abortControllers.push(new AbortController()) - 1
           ];
-        eventTarget.addEventListener(
-          eventType as string,
-          (ev: Event) => {
-            this.events?.forEach((event) => {
+        this.events.forEach((callBack) => {
+          eventTarget.addEventListener(
+            eventType as string,
+            async (ev: Event) => {
               if (
-                event.eventType !== eventType ||
-                event.triggerCondition === undefined ||
-                event.triggerCondition(ev) === false
+                callBack.eventType !== eventType ||
+                callBack.triggerCondition === undefined ||
+                callBack.triggerCondition(ev) === false
               ) {
                 return;
               }
@@ -118,11 +131,14 @@ export function withEvents<T extends AnonymousClass<unknown>>(
                 console.warn(`empty event cannot be run!`);
                 return;
               }
-              event.ev(ev);
-            });
-          },
-          { signal: controller.signal },
-        );
+              if (callBack.blocking) {
+                return await callBack.ev(ev);
+              }
+              return callBack.ev(ev);
+            },
+            { signal: controller.signal },
+          );
+        });
       };
     }
   };

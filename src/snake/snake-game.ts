@@ -6,18 +6,23 @@ import {
   MainMenuScene,
 } from "./scene/main-menu/main-menu.scene";
 import { GameOverScene } from "snake/scene/game-over/game-over.scene";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@octo/core";
 
 const cnv: HTMLCanvasElement | null = document.querySelector("canvas");
 
 const CANVAS_SIZE: Vec2<number> = { x: 1024, y: 768 };
+// const CANVAS_SIZE: Vec2<number> = { x: 500, y: 500 }; 
 const FPS = 60;
 
 export class SnakeGame extends Game {
-  init(): void {
+  override init(): void {
     if (this.ctx === undefined || this.ctx === null) {
       throw Error("ctx is undefined");
     }
     super.init();
+    
+    this.settingsManager?.set<number>(CANVAS_WIDTH, CANVAS_SIZE.x);
+    this.settingsManager?.set<number>(CANVAS_HEIGHT, CANVAS_SIZE.y);
 
     this.sceneManager?.addScene(new LoadingScene(this.ctx, this.canvas));
     this.sceneManager?.addScene(

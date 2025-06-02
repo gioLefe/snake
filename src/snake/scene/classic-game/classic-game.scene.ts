@@ -1,22 +1,29 @@
 import {
   AssetsHandler,
   AudioController,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
   DIContainer,
   SceneHandler,
+  Settings,
 } from "@octo/core";
-import { createVector, randomIntFromInterval } from "@octo/helpers";
+import {
+  checkSATCollision,
+  createVector,
+  randomIntFromInterval,
+} from "@octo/helpers";
 import {
   ASSETS_MANAGER_DI,
   CanvasScene2D,
   MinMax,
   SCENE_MANAGER_DI,
-  SoundAsset,
-  Vec2
+  Vec2,
 } from "@octo/models";
 import { withEvents } from "@octo/ui";
 import { Cookie, Pickup, Snake } from "../../models";
 import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
 import { CLASSIC_GAME_ASSETS, initSnake } from "./classic-game-init.scene";
+import { VolumneBtn } from "./volumeBtn";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
 const CANVAS_BG_COLOR = "#afd7db";
@@ -24,7 +31,7 @@ const MOUSE_MOVE_EVENT_ID = "ClassicGameScene-mousemove";
 const KEY_DOWN_EVENT_ID = "ClassicGameScene-keydown";
 const KEY_UP_EVENT_ID = "ClassicGameScene-keyup";
 
-const FOOD_SIZE = 24;
+const FOOD_SIZE = 64;
 
 export class ClassicGameScene
   extends withEvents(class {})
@@ -40,10 +47,15 @@ export class ClassicGameScene
   audioController = DIContainer.getInstance().resolve<AudioController>(
     AudioController.AUDIO_CONTROLLER_DI,
   );
+  settingsManager = DIContainer.getInstance().resolve<Settings>(
+    Settings.SETTINGS_DI,
+  );
 
+  volumeBtn: VolumneBtn | undefined;
   playerSnake: Snake | undefined;
   pickups: Pickup[] = [];
   initialWorldCoordinates: Vec2<number> | undefined;
+  sceneReady: boolean = false;
 
   // Stats
   score = 0;
@@ -68,18 +80,12 @@ export class ClassicGameScene
     if (this.initialWorldCoordinates === undefined) {
       console.warn("initial world coordinates are not found");
     }
-    this.playerSnake = initSnake(this.ctx, {
-      worldCoordinates: {
-        x: this.initialWorldCoordinates?.x ?? 0,
-        y: this.initialWorldCoordinates?.y ?? 0,
-      },
-      length: 5,
-    });
 
     this.addCallback(
       "mousemove",
       MOUSE_MOVE_EVENT_ID,
       (ev: MouseEvent) => this.mouseMove(ev)(this.playerSnake!),
+      false,
       () => true,
     );
     this.enableEvent("mousemove")(this.canvas);
@@ -87,6 +93,7 @@ export class ClassicGameScene
       "keydown",
       KEY_DOWN_EVENT_ID,
       (ev: KeyboardEvent) => this.keyDown(ev)(this.playerSnake!),
+      false,
       () => true,
     );
     this.enableEvent("keydown")(window);
@@ -94,21 +101,51 @@ export class ClassicGameScene
       "keyup",
       KEY_UP_EVENT_ID,
       (ev: KeyboardEvent) => this.keyUp(ev)(this.playerSnake!),
+      false,
       () => true,
     );
     this.enableEvent("keyup")(window);
 
     return Promise.allSettled(this.assetsManager.add(CLASSIC_GAME_ASSETS)).then(
       () => {
-        this.audioController.play(
-          this.assetsManager.find<SoundAsset>("snake-start")?.source,
+        this.audioController.playAsset("snake-start", {
+          force: true,
+          loop: false,
+        });
+        this.audioController.playAsset("background-music", {
+          force: false,
+          loop: true,
+        });
+
+        this.playerSnake = initSnake(this.ctx, {
+          worldCoordinates: {
+            x: this.initialWorldCoordinates?.x ?? 0,
+            y: this.initialWorldCoordinates?.y ?? 0,
+          },
+          length: 5,
+        });
+
+        this.volumeBtn = new VolumneBtn(
+          this.ctx,
+          "speaker-up",
+          "speaker-mute",
+          32,
+          32,
+          10,
+          40,
         );
+        this.volumeBtn.init(this.canvas);
+        this.sceneReady = true;
       },
     );
   }
 
   update(deltaTime: number): void {
-    if (this.gameOver === true || this.playerSnake === undefined) {
+    if (
+      this.gameOver === true ||
+      this.playerSnake === undefined ||
+      this.sceneReady === false
+    ) {
       return;
     }
 
@@ -118,23 +155,24 @@ export class ClassicGameScene
       this.playerSnake.getDirection(),
       this.playerSnake.getSpeed(),
     );
-    const headPos = this.playerSnake.getHeadPos();
+    const headPosition = this.playerSnake.getHeadPosition();
+
     const snakeNextPos = {
-      x: headPos.x + headDistanceDelta.x * deltaTime,
-      y: headPos.y + headDistanceDelta.y * deltaTime,
+      x: headPosition.x + headDistanceDelta.x * deltaTime,
+      y: headPosition.y + headDistanceDelta.y * deltaTime,
     };
 
-    // Snake colliding with itself
-    if (this.playerSnake.collidesWithItself()) {
+    // - Snake colliding with itself
+    if (this.collidesWithItself()) {
       this.playerLose();
     }
 
     // - Snake colliding with screen borders
     if (
-      headPos.x < 0 ||
-      headPos.x > this.canvas.width ||
-      headPos.y < 0 ||
-      headPos.y > this.canvas.height
+      headPosition.x < 0 ||
+      headPosition.x > this.canvas.width ||
+      headPosition.y < 0 ||
+      headPosition.y > this.canvas.height
     ) {
       this.playerLose();
       return;
@@ -142,14 +180,16 @@ export class ClassicGameScene
 
     // Spawn cookies
     while (this.pickups.length < 5) {
+      const w = this.settingsManager.get<number>(CANVAS_WIDTH);
+      const h = this.settingsManager.get<number>(CANVAS_HEIGHT);
       const cookie = new Cookie(
         this.ctx,
         "cookie",
-        FOOD_SIZE,
+        FOOD_SIZE + 12,
         FOOD_SIZE,
         this.calcRandomPosition(
-          1024,
-          768,
+          w ?? 1024,
+          h ?? 768,
           { min: FOOD_SIZE, max: FOOD_SIZE },
           { min: FOOD_SIZE, max: FOOD_SIZE },
         ),
@@ -172,9 +212,10 @@ export class ClassicGameScene
         snakeNextPos.y <= pickupPos.y + pickup.getHeight() + headSideLength
       ) {
         pickup.onPickup(this.playerSnake);
-        this.audioController.play(
-          this.assetsManager.find<SoundAsset>("snake-eat")?.source,
-        );
+        this.audioController.playAsset("snake-eat", {
+          force: true,
+          loop: false,
+        });
 
         this.pickups[i].clean();
         this.pickups.splice(i, 1);
@@ -199,22 +240,24 @@ export class ClassicGameScene
     this.playerSnake?.render(this.ctx);
 
     // Render UI
-    this.ctx.font = `12px Verdana`;
+    this.volumeBtn?.render();
+    this.ctx.font = `18px Verdana`;
     this.ctx.strokeStyle = "#000";
     this.ctx.strokeText("Score: " + this.score, 10, 20);
   }
 
   clean(...args: any) {
+    this.sceneReady = false;
     this.removeCallback(KEY_DOWN_EVENT_ID);
     this.removeCallback(KEY_UP_EVENT_ID);
     this.removeCallback(MOUSE_MOVE_EVENT_ID);
     this.abortControllers.forEach((ac) => ac.abort());
   }
 
-  async restart() {
+  async restart(): Promise<void> {
     console.log("restarting classic game scene");
     this.clean();
-    await this.init();
+    return await this.init();
   }
 
   private mouseMove = (ev: MouseEvent) => {
@@ -267,10 +310,39 @@ export class ClassicGameScene
     };
   }
 
+  private collidesWithItself(): boolean {
+    const headSegment = this.playerSnake?.getHeadSegment();
+    if (headSegment === undefined) {
+      console.error("Snake has no head segment");
+      return false;
+    }
+    const length = this.playerSnake?.getLength();
+    if (length === undefined) {
+      throw new Error("Snake has no length");
+    }
+    const segments = this.playerSnake?.getSegments();
+    if (segments === undefined) {
+      throw new Error("Snake has no segments");
+    }
+    // Snake colliding with itself ( give for granted is impossible head collides with the first 3 polygons)
+    for (let i = 4; i < length; i++) {
+      if (
+        checkSATCollision(
+          headSegment.getBBoxPolygon(),
+          segments[i].getBBoxPolygon(),
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private playerLose() {
-    this.audioController.play(
-      this.assetsManager.find<SoundAsset>("snake-death")?.source,
-    );
+    this.audioController.playAsset("snake-death", {
+      force: false,
+      loop: false,
+    });
     this.gameOver = true;
     // TODO Disable current scene events before changing to game_over
 

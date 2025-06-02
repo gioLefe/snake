@@ -3,12 +3,12 @@ import { isPointInAlignedBBox } from "@octo/helpers";
 import { SCENE_MANAGER_DI } from "@octo/models";
 import { CLASSIC_GAME_SCENE_ID, ClassicGameScene } from "snake/scene/classic-game/classic-game.scene";
 import { GAME_OVER_SCENE_ID } from "snake/scene/game-over/game-over.scene";
-import { UIButton } from "ui/controls/button";
+import { UIClickableLabel } from "ui/controls/clickable-label";
 
 const MOUSE_CLICK = "restartBtnClick";
 
-export class RestartBtn extends UIButton {
-  init(
+export class RestartBtn extends UIClickableLabel {
+  override init(
     canvas: HTMLCanvasElement,
     ...args: any
   ): void {
@@ -17,18 +17,19 @@ export class RestartBtn extends UIButton {
       "click",
       MOUSE_CLICK,
       this.restartBtnClick,
+      true,
       (ev) => isPointInAlignedBBox({ x: ev.offsetX, y: ev.offsetY }, this.getBBox())
     );
     this.enableEvent("click")(canvas);
   }
 
-  clean(...args: any): void {
+  override clean(...args: any): void {
     super.clean();
     this.removeCallback(MOUSE_CLICK);
     this.deregisterEvents()
   }
 
-  private restartBtnClick() {
+  private async restartBtnClick() {
     const sceneManager =
       DIContainer.getInstance().resolve<SceneHandler>(SCENE_MANAGER_DI);
     sceneManager.deleteScene(
@@ -39,6 +40,6 @@ export class RestartBtn extends UIButton {
     if (classicGameScene === undefined) {
       throw new Error(`Cannot find active ${CLASSIC_GAME_SCENE_ID} scene`);
     }
-    (classicGameScene[0] as ClassicGameScene).restart();
+    return await (classicGameScene[0] as ClassicGameScene).restart();
   }
 }
