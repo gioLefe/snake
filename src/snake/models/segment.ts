@@ -6,15 +6,15 @@ import {
   rotatePolygon,
   WorldPolygon,
 } from "@octo/helpers";
-import { GameObject, LinkedListNode, Pivot, Sprite, Vec2 } from "@octo/models";
+import { GameObject, LinkedListNode, UnitVector, Sprite, Vec2 } from "@octo/models";
 
 export class Segment<
   T extends Sprite,
 > extends GameObject<CanvasRenderingContext2D> {
   sprite: T | undefined;
 
-  private nextPivot: LinkedListNode<Pivot> | undefined;
-  private popPivotFn: () => Pivot | undefined;
+  private nextPivot: LinkedListNode<UnitVector> | undefined;
+  private popPivotFn: () => UnitVector | undefined;
   private isTailSegment = false;
   private bboxPolygon: WorldPolygon;
 
@@ -23,7 +23,7 @@ export class Segment<
     direction: number,
     isTail = false,
     sprite: T,
-    popPivotFn: () => Pivot | undefined,
+    popPivotFn: () => UnitVector | undefined,
     bboxPolygon: WorldPolygon | undefined,
     worldPosition?: Vec2<number>,
   ) {
@@ -62,13 +62,13 @@ export class Segment<
     this.isTailSegment = value;
   }
 
-  popPivot(): Pivot | undefined {
+  popPivot(): UnitVector | undefined {
     return this.popPivotFn();
   }
-  setNextPivot(pivot: LinkedListNode<Pivot> | undefined) {
+  setNextPivot(pivot: LinkedListNode<UnitVector> | undefined) {
     this.nextPivot = pivot;
   }
-  getNextPivot(): LinkedListNode<Pivot> | undefined {
+  getNextPivot(): LinkedListNode<UnitVector> | undefined {
     return this.nextPivot;
   }
 

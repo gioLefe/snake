@@ -1,14 +1,13 @@
 import {
-  AudioController,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
   DIContainer,
   SceneHandler,
-  SceneManager,
   Settings,
-} from "@octo/core";
-import { GameCycle } from "@octo/models";
-import { AssetsHandler, AssetsManager } from "core/assets-manager";
+  SceneManager,
+  AudioController,
+  AssetsManager,
+} from "../core";
+import { AssetsHandler } from "../core/models/assets-handler";
+import { GameCycle } from "./game-cycle";
 
 export const SCENE_MANAGER_DI = "SceneManager";
 export const ASSETS_MANAGER_DI = "AsetsManager";
@@ -60,7 +59,7 @@ export abstract class Game implements GameCycle {
 
     this.init();
   }
-  clean(...args: any) {
+  clean(..._args: any) {
     throw new Error("Method not implemented.");
   }
 
@@ -100,7 +99,7 @@ export abstract class Game implements GameCycle {
       ?.forEach((scene) => scene.update(deltaTime));
   }
 
-  render(...args: any): void {
+  render(..._args: any): void {
     if (this.debug.render) {
       console.log(`%c *** Render`, `background:#020; color:#adad00`);
     }

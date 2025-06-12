@@ -1,7 +1,5 @@
-import { CanvasScene2D } from "@octo/models";
-import { UILabel } from "@octo/ui/controls";
-import { UIClickableLabel } from "ui/controls/clickable-label";
-import { UIPanel } from "ui/controls/panel";
+import { CanvasScene2D } from "../../../models";
+import { UIClickableLabel, UILabel, UIPanel } from "../../../ui/controls";
 import { PlayBtn } from "./models/play-btn";
 
 export const MAIN_MENU_SCENE_ID = "main-menu";
@@ -10,9 +8,9 @@ export class MainMenuScene implements CanvasScene2D {
   readonly id: string = MAIN_MENU_SCENE_ID;
   readonly ITEMS_GAP = 8;
   readonly ITEMS_STYLE = { font: "48px Verdana" };
-  readonly ITEMS_STROKE_COLOR = "#00FFad"
-  readonly ITEMS_FILL_COLOR = "#204Fa1"
-  readonly ITEMS_MOUSE_ENETER_FILL_COLOR = "#a22"
+  readonly ITEMS_STROKE_COLOR = "#00FFad";
+  readonly ITEMS_FILL_COLOR = "#204Fa1";
+  readonly ITEMS_MOUSE_ENETER_FILL_COLOR = "#a22";
 
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -27,7 +25,7 @@ export class MainMenuScene implements CanvasScene2D {
     this.ctx = ctx;
     this.canvas = canvas;
 
-    const canvasMiddleWidth = this.canvas?.width / 2
+    const canvasMiddleWidth = this.canvas?.width / 2;
 
     this.title = new UILabel(
       this.ctx,
@@ -50,10 +48,10 @@ export class MainMenuScene implements CanvasScene2D {
     );
     this.playBtn.addMouseEnterCallback(() => {
       this.playBtn.setTextFillStyle(this.ITEMS_MOUSE_ENETER_FILL_COLOR);
-    })
+    });
     this.playBtn.addMouseLeaveCallback(() => {
       this.playBtn.setTextFillStyle(this.ITEMS_FILL_COLOR);
-    })
+    });
     this.playBtn.setTextFillStyle(this.ITEMS_STROKE_COLOR);
     this.playBtn.setTextStrokeStyle(this.ITEMS_FILL_COLOR);
 
@@ -63,8 +61,8 @@ export class MainMenuScene implements CanvasScene2D {
       undefined,
       undefined,
       this.ITEMS_STYLE,
-      'OPTIONS'
-    )
+      "OPTIONS",
+    );
     this.configureBtn.setTextFillStyle(this.ITEMS_STROKE_COLOR);
     this.configureBtn.setTextStrokeStyle(this.ITEMS_FILL_COLOR);
   }
@@ -74,14 +72,13 @@ export class MainMenuScene implements CanvasScene2D {
     this.playBtn?.init(this.canvas);
     this.configureBtn?.init(this.canvas);
 
-    const canvasMiddleHeight = this.canvas?.height / 2
-    const canvasMiddleWidth = this.canvas?.width / 2
+    const canvasMiddleWidth = this.canvas?.width / 2;
 
     this.panel = new UIPanel(this.ctx);
     this.panel.setPosition({ x: canvasMiddleWidth - 50, y: 0 + 200 });
 
     this.panel.addPanelItem(this.playBtn);
-    this.panel.addPanelItem(this.configureBtn)
+    this.panel.addPanelItem(this.configureBtn);
 
     // TODO Fix the repositioning of the title
     // const titleMetrics = this.title.getSize();
@@ -101,7 +98,7 @@ export class MainMenuScene implements CanvasScene2D {
 
     // UI elements
     this.title?.render();
-    this.panel?.render()
+    this.panel?.render();
   }
   clean() {
     this.title?.clean();

@@ -1,5 +1,5 @@
 // TODO
-import { BoundingBox, Vec2 } from "..";
+import { BoundingBox, Vec2 } from "../";
 
 export class QuadTree {
     // Arbitrary constant to indicate how many elements can be stored in this quad tree node
@@ -50,7 +50,7 @@ export class QuadTree {
         });
     }
 
-    queryRange(range: BoundingBox<number>): Vec2<number>[] | undefined {
+    queryRange(_range: BoundingBox<number>): Vec2<number>[] | undefined {
         return undefined
     }
 }

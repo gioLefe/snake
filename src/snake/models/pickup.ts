@@ -1,7 +1,7 @@
 import { GameObject } from "@octo/models";
 
 export abstract class Pickup extends GameObject<CanvasRenderingContext2D> {
-  onPickup(...args: any): any {}
+  onPickup(..._args: any): any {}
 }
 
 export abstract class PickupItem extends Pickup {

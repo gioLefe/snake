@@ -1,5 +1,7 @@
-import { GameAsset, AssetsHandler, DIContainer } from "@octo/core";
-import { ASSETS_MANAGER_DI, CanvasScene2D, GameObject } from "@octo/models";
+import { DIContainer } from "../../../core";
+import { AssetsHandler } from "../../../core/models/assets-handler";
+import { GameAsset } from "../../../core/models/game-asset";
+import { ASSETS_MANAGER_DI, CanvasScene2D, GameObject } from "../../../models";
 import { Spinner } from "./models/";
 
 export const LOADING_SCENE_SCENE_ID = "loading";
@@ -24,17 +26,18 @@ export class LoadingScene implements CanvasScene2D {
     this.canvas = canvas;
   }
 
-  async init(...args: any) {
-
-    return await Promise.all(this.assetsManager.add(LOADING_IMAGE_ASSETS)).then((results) => {
-      // Init all components
-      this.spinner.init(this.ctx);
-    });
+  async init(..._args: any) {
+    return await Promise.all(this.assetsManager.add(LOADING_IMAGE_ASSETS)).then(
+      (_results) => {
+        // Init all components
+        this.spinner.init(this.ctx);
+      },
+    );
   }
-  update(deltaTime: number, ...args: any) {
+  update(deltaTime: number, ..._args: any) {
     this.spinner.update(deltaTime);
   }
-  render(...args: any) {
+  render(..._args: any) {
     if (this.ctx === undefined) {
       throw new Error("ctx is undefined!");
     }
@@ -48,5 +51,5 @@ export class LoadingScene implements CanvasScene2D {
     this.ctx.globalAlpha = 1;
     this.spinner.render();
   }
-  clean(...args: any) { }
+  clean(..._args: any) {}
 }

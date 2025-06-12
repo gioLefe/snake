@@ -1,5 +1,6 @@
-import { AssetsHandler, DIContainer } from "@octo/core";
-import { ASSETS_MANAGER_DI, ImageAsset, Sprite, Vec2 } from "@octo/models";
+import { DIContainer } from "../../core";
+import { AssetsHandler } from "../../core/models/assets-handler";
+import { Sprite, ImageAsset, ASSETS_MANAGER_DI, Vec2 } from "../../models";
 
 export class SpriteImage implements Sprite {
   image: ImageAsset | undefined;
@@ -32,9 +33,13 @@ export class SpriteImage implements Sprite {
     this.rotationRadiants = radiants;
   }
 
-  init(...args: any) {}
-  update(deltaTime: number, ...args: any) {}
-  render(position: Vec2<number>) {
+  init(..._args: any) {}
+  update(_deltaTime: number, ..._args: any) {}
+  render(
+    position: Vec2<number>,
+    dx: number = -this.width / 2,
+    dy: number = -this.height / 2,
+  ) {
     if (this.ctx === undefined) {
       throw new Error("ctx is undefined");
     }
@@ -52,25 +57,17 @@ export class SpriteImage implements Sprite {
       this.ctx.rotate(this.rotationRadiants);
     }
 
-    this.ctx.drawImage(
-      this.image?.source,
-      // position.x - this.width / 2,
-      // position.y - this.height / 2,
-      this.dx,
-      this.dy,
-      this.width,
-      this.height,
-    );
+    this.ctx.drawImage(this.image?.source, dx, dy, this.width, this.height);
 
     this.ctx.restore();
   }
-  clean(...args: any) {}
+  clean(..._args: any) {}
 
   getDistanceFromCenterToSide(): number {
     return this.getSideLength();
   }
   getSideLength(): number {
     // TODO
-    return 0;
+    return this.width / 2;
   }
 }

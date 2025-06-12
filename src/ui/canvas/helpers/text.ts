@@ -1,4 +1,4 @@
-import { BoundingBox, Vec2 } from "@octo/models";
+import { Vec2, BoundingBox } from "../../../models";
 
 export function getTextBBox(
   ctx: CanvasRenderingContext2D,

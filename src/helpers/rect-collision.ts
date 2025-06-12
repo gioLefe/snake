@@ -1,4 +1,4 @@
-import { BoundingBox, Vec2 } from "@octo/models";
+import { BoundingBox, Vec2 } from "../models";
 
 export function isPointInAlignedBBox(
   point: Vec2<number>,

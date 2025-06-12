@@ -1,15 +1,14 @@
 import {
   angleBetween,
-  checkSATCollision,
   createPolygon,
   createVector,
   renderPolygon,
   toPrecisionNumber,
-  WorldPolygon,
+  WorldPolygon
 } from "@octo/helpers";
 import { GameObject, LinkedList, Polygon, Vec2 } from "@octo/models";
 import { DEFAULT_POLYGON_SIZE } from "snake/constants";
-import { Pivot, pivotComparator } from "../../models/pivot";
+import { UnitVector, pivotComparator } from "../../models/unit-vector";
 import { Segment } from "./segment";
 import { SpriteImage } from "./sprite-image";
 import { SpritePolygon } from "./sprite-polygon";
@@ -26,26 +25,24 @@ export type SteerDirection = {
 };
 
 const DEBUG = false;
-const HEAD_SEGMENT_COLOR = "#86a04e";
 const SEGMENT_COLOR = "#576c1a";
 const SEGMENT_SIDES = 6;
-const HEAD_SIZE: Vec2<number> = { x: 64, y: 64 };
+const HEAD_SIZE: Vec2<number> = { x: 43, y: 43 };
 
 export class Snake extends GameObject<CanvasRenderingContext2D> {
   override id: string;
   protected override direction: number = Math.random() % (Math.PI * 2);
-  private readonly BIT_DISTANCE = 15;
+  private readonly BIT_DISTANCE = 16;
   private length: number = 10;
   private headSegment: Segment<SpriteImage> | undefined;
   private segments: Segment<SpritePolygon>[] = [];
   private turboSpeed: number = 500;
   private speed: number = 350;
   private turbonOn: boolean = false;
+  private maxSteerAngle = 0.15;
 
-  private maxSteerAngle = 0.1;
-  private targetPoint: Vec2<number> | undefined = undefined;
-
-  private pivots: LinkedList<Pivot> = new LinkedList(pivotComparator);
+  private destinationPoint: Vec2<number> | undefined = undefined;
+  private pivots: LinkedList<UnitVector> = new LinkedList(pivotComparator);
 
   constructor(ctx: CanvasRenderingContext2D, id: string) {
     super(ctx);
@@ -63,17 +60,10 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       this.ctx,
       this.direction,
       false,
-      new SpriteImage(
-        this.ctx,
-        "snake-face",
-        HEAD_SIZE.x,
-        HEAD_SIZE.y,
-        -(HEAD_SIZE.x / 2),
-        -(HEAD_SIZE.y / 2),
-      ),
+      new SpriteImage(this.ctx, "snake-face", HEAD_SIZE.x, HEAD_SIZE.y),
       this.popPivot,
       createPolygon({
-        numSides: 6,
+        numSides: SEGMENT_SIDES,
         sideLength: HEAD_SIZE.x / 2,
       }) as WorldPolygon,
       args.worldCoordinates,
@@ -135,14 +125,14 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     const speed = this.getSpeed();
 
     // Check if there is a target point to steer towards to (i.e: Mouse movement)
-    const angleToTarget = this.calcHeadTargetAngle(this.targetPoint);
+    const angleToTarget = this.calcHeadTargetAngle(this.destinationPoint);
     if (angleToTarget !== 0) {
       let angleFactor = angleToTarget > 0 ? -1 : 1;
       let steerAngle: number = 0;
 
       if (Math.abs(angleToTarget - Math.PI) < this.maxSteerAngle) {
         steerAngle = Math.abs(angleToTarget - Math.PI) * angleFactor;
-        this.targetPoint = undefined;
+        this.destinationPoint = undefined;
       } else {
         steerAngle = this.maxSteerAngle * angleFactor;
       }
@@ -155,6 +145,12 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     for (let i = 0; i < this.length; i++) {
       this.segments[i].update(deltaTime, distanceToCover);
     }
+  }
+
+  static isSnake(obj: any): obj is Snake {
+    return (
+      obj && typeof obj.speed === "number" && typeof obj.length === "number"
+    );
   }
 
   steer(radiants: number) {
@@ -174,7 +170,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     this.headSegment.setDirection(this.direction);
     this.headSegment.rotate(this.direction);
 
-    const pivot: Pivot = {
+    const pivot: UnitVector = {
       position: { x: sPos.x, y: sPos.y },
       direction: this.direction,
     };
@@ -195,8 +191,8 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       this.segments[i].setNextPivot(nodePivot);
     }
   }
-  steerTo(point: Vec2<number>): void {
-    this.targetPoint = point;
+  assignDestinationPoint(point: Vec2<number>): void {
+    this.destinationPoint = point;
   }
   setTurbo(turbo: boolean) {
     this.turbonOn = turbo;
@@ -214,7 +210,7 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
   getHeadSideLength(): number | undefined {
     return this.headSegment?.getSideLength();
   }
-  popPivot = (): Pivot | undefined => {
+  popPivot = (): UnitVector | undefined => {
     if (this.pivots.size()) {
       const pivot = this.pivots.head;
       if (pivot !== null) {
@@ -343,11 +339,11 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
     //     ctx.fillText('x:' + toPrecisionNumber(d.position.x, 7) + ' y:' + toPrecisionNumber(d.position.y, 7), d.position.x - 1, d.position.y + 1)
     // })
 
-    if (this.targetPoint) {
+    if (this.destinationPoint) {
       ctx.beginPath();
       ctx.strokeStyle = "#ff9";
       ctx.moveTo(this.getHeadPosition().x, this.getHeadPosition().y);
-      ctx.lineTo(this.targetPoint.x, this.targetPoint.y);
+      ctx.lineTo(this.destinationPoint.x, this.destinationPoint.y);
       ctx.stroke();
       ctx.closePath();
 
@@ -380,18 +376,12 @@ export class Snake extends GameObject<CanvasRenderingContext2D> {
       });
       // if (headBBox !== undefined) printWorldPolygonInfo(headBBox, "head");
     }
-    this.segments.forEach((s, i) => {
+    this.segments.forEach((s) => {
       const bbox = s.getBBoxPolygon();
       renderPolygon(bbox as Polygon, ctx, {
         worldCoordinates: s.getPosition(),
       });
       // if (s !== undefined) printWorldPolygonInfo(bbox, `segment-${i}`);
     });
-  }
-
-  static isSnake(obj: any): obj is Snake {
-    return (
-      obj && typeof obj.speed === "number" && typeof obj.length === "number"
-    );
   }
 }

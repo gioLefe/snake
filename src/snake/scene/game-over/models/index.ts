@@ -1,1 +1,1 @@
-export * from "./play-btn";
+export * from "./restart-btn";

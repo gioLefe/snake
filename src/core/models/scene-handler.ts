@@ -1,4 +1,4 @@
-import { CanvasScene2D } from "models/canvas-scene";
+import { CanvasScene2D } from "../../models/canvas-scene";
 
 /**
  * An interface representing a handler for managing scenes.

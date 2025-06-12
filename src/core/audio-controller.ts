@@ -1,29 +1,27 @@
-import { ASSETS_MANAGER_DI } from "models/game";
+import { SoundAsset } from "../models/asset";
+import { ASSETS_MANAGER_DI } from "../models/game";
 import { AssetsManager } from "./assets-manager";
 import { DIContainer } from "./di-container";
-import { SoundAsset } from "@octo/models";
+import { AudioPlayingOptions } from "./models/audio-playing-options";
 
-export type AudioPlayingOptions = {
-  loop: boolean;
-  force: boolean;
-};
-
-const MAX_VOLUME = 0.5
+const MAX_VOLUME = 1;
 
 export class AudioController {
   static AUDIO_CONTROLLER_DI = "AudioController";
+
   private assetsManager =
     DIContainer.getInstance().resolve<AssetsManager>(ASSETS_MANAGER_DI);
   private audioContext = new AudioContext();
   private mainGainNode = this.audioContext.createGain();
   private playingSounds: Record<string, AudioPlayingOptions> = {};
-  get playingAssetsIds() {
-    return Object.keys(this.playingSounds);
-  }
 
   constructor() {
     this.mainGainNode.gain.value = MAX_VOLUME;
     this.mainGainNode.connect(this.audioContext.destination);
+  }
+
+  get playingAssetsIds() {
+    return Object.keys(this.playingSounds);
   }
 
   setMainVolume(value: number) {
@@ -52,28 +50,30 @@ export class AudioController {
     }
     this.playingSounds[id] = audioPlayingOptions;
 
-    const buffer = this.assetsManager.find<SoundAsset>(id)?.source;
-    if (buffer === undefined) {
+    const arrayBuffer = this.assetsManager.find<SoundAsset>(id)?.source;
+    if (arrayBuffer === undefined) {
       return;
     }
 
     // THIS IS INCONVENIENT!
-    // we are doing 2 operations (cloning buffer, and then decode) each time we want to play a sound , and this comes at a cost!
+    // we are doing 2 operations (cloning buffer, and then decode) each time we want to play a sound, and this comes at a cost!
     // Look for a solution
-    this.audioContext.decodeAudioData(buffer.slice(0)).then((audioBuffer) => {
-      const audioBufferSourceNode = this.audioContext.createBufferSource();
-      audioBufferSourceNode.buffer = audioBuffer;
-      audioBufferSourceNode.connect(this.mainGainNode);
-      audioBufferSourceNode.start();
-      audioBufferSourceNode.loop = audioPlayingOptions.loop;
-      audioBufferSourceNode.addEventListener("ended", () => {
-        Object.entries(this.playingSounds).forEach((n) => {
-          if (n[0] === id) {
-            console.log(`Audio buffer ended event: ${id}`);
-            delete this.playingSounds[id];
-          }
+    this.audioContext
+      .decodeAudioData(arrayBuffer.slice(0))
+      .then((audioBuffer) => {
+        const audioBufferSourceNode = this.audioContext.createBufferSource();
+        audioBufferSourceNode.buffer = audioBuffer;
+        audioBufferSourceNode.connect(this.mainGainNode);
+        audioBufferSourceNode.start();
+        audioBufferSourceNode.loop = audioPlayingOptions.loop;
+        audioBufferSourceNode.addEventListener("ended", () => {
+          Object.entries(this.playingSounds).forEach((n) => {
+            if (n[0] === id) {
+              console.log(`Audio buffer ended event: ${id}`);
+              delete this.playingSounds[id];
+            }
+          });
         });
       });
-    });
   }
 }

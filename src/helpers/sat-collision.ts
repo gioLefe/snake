@@ -1,12 +1,12 @@
-import { Polygon, Vec2 } from "@octo/models";
-import { intervalsOverlap, projectPolygonToAxis } from "./";
+import { intervalsOverlap, projectPolygonToAxis } from ".";
+import { Polygon, Vec2 } from "../models";
 
 /** A polygon with world coordinates information */
 export type WorldPolygon = Polygon & {
   worldCoordinates: Vec2<number>;
 };
 
-export function checkSATCollision(
+export function satCollision(
   polygonA: WorldPolygon,
   polygonB: WorldPolygon,
 ): boolean {

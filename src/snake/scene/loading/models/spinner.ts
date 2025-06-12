@@ -1,5 +1,6 @@
-import { AssetsHandler, DIContainer } from "@octo/core";
-import { ASSETS_MANAGER_DI, GameObject, ImageAsset } from "@octo/models";
+import { DIContainer } from "../../../../core";
+import { AssetsHandler } from "../../../../core/models/assets-handler";
+import { ASSETS_MANAGER_DI, GameObject, ImageAsset } from "../../../../models";
 
 export class Spinner extends GameObject<CanvasRenderingContext2D> {
   assetsManager =
@@ -12,17 +13,17 @@ export class Spinner extends GameObject<CanvasRenderingContext2D> {
     super(ctx);
   }
 
-  init() {
+  override init() {
     super.init();
     this.image = this.assetsManager.find("spinner");
   }
 
-  update(deltaTime: number) {
+  override update(deltaTime: number) {
     super.update(deltaTime);
     this.rotation = this.rotation >= 1 ? 0 : this.rotation + this.speed;
   }
 
-  render(...args: any) {
+  override render(...args: any) {
     super.render(args);
     if (this.image === undefined) {
       console.warn("image is not loaded");

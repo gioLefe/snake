@@ -1,4 +1,4 @@
-import { AnonymousClass } from "@octo/models";
+import { AnonymousClass } from "../models";
 
 export type EventType = keyof HTMLElementEventMap;
 export type TriggerCondition<T extends EventType> = (

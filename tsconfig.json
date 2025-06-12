@@ -31,7 +31,8 @@
       "@octo/ui/canvas": ["ui/canvas"],
       "@octo/ui/canvas/models": ["ui/canvas/models"],
       "@octo/ui/controls": ["ui/controls"]
-    }
+    },
+    "outDir": "./dist"
   },
   "include": ["src"]
 }

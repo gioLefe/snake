@@ -1,6 +1,7 @@
-import { AssetsHandler, DIContainer } from "@octo/core";
 import { calculateNormals, getBBoxRect } from "@octo/helpers";
 import { ASSETS_MANAGER_DI, ImageAsset, Polygon, Vec2 } from "@octo/models";
+import { DIContainer } from "../../../../core";
+import { AssetsHandler } from "../../../../core/models/assets-handler";
 import { Food } from "../../food";
 import { Snake } from "../../snake";
 
@@ -38,11 +39,11 @@ export class Cookie extends Food {
     // TODO trigger side effects: Play sound, graphic effects, etc.
   }
 
-  override init(ctx: CanvasRenderingContext2D, ...args: any): void {
+  override init(ctx: CanvasRenderingContext2D, ..._args: any): void {
     this.ctx = ctx;
     this.updateBbox();
   }
-  override render(...args: any): void {
+  override render(..._args: any): void {
     if (this.ctx === undefined) {
       throw new Error("ctx is undefined");
     }
@@ -87,16 +88,17 @@ export class Cookie extends Food {
   }
 
   private updateBbox() {
-    if (this.position) {
-      this.bbox = {
-        nw: { x: this.position.x, y: this.position.y },
-        se: {
-          x: this.position.x + this.width,
-          y: this.position.y + this.height,
-        },
-      };
-      this.bboxPolygon = getBBoxRect(this.bbox);
-      this.bboxPolygon.normals = calculateNormals(this.bboxPolygon.points);
+    if (this.position === undefined) {
+      return;
     }
+    this.bbox = {
+      nw: { x: this.position.x, y: this.position.y },
+      se: {
+        x: this.position.x + this.width,
+        y: this.position.y + this.height,
+      },
+    };
+    this.bboxPolygon = getBBoxRect(this.bbox);
+    this.bboxPolygon.normals = calculateNormals(this.bboxPolygon.points);
   }
 }

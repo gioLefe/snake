@@ -1,6 +1,6 @@
-import { isPointInAlignedBBox } from "@octo/helpers";
-import { EventCallback, withEvents } from "@octo/ui";
-import { UILabel } from "@octo/ui/controls";
+import { isPointInAlignedBBox } from "../../helpers";
+import { withEvents, EventCallback } from "../with-events";
+import { UILabel } from "./label";
 
 const MOUSE_ENTER_ID = "uiClickableLabel-enter";
 const MOUSE_LEAVE_ID = "uiClickableLabel-leave";
@@ -11,7 +11,7 @@ export class UIClickableLabel extends withEvents(UILabel) {
   private mouseEnterCallbacks: EventCallback[] = [];
   private mouseLeaveCallbacks: EventCallback[] = [];
 
-  override init(canvas: HTMLCanvasElement, ...args: any): void {
+  override init(canvas: HTMLCanvasElement, ..._args: any): void {
     super.init(canvas);
 
     this.addCallback<"mousemove">(
@@ -31,7 +31,7 @@ export class UIClickableLabel extends withEvents(UILabel) {
     this.enableEvent("mousemove")(canvas);
   }
 
-  override clean(...args: any): void {
+  override clean(..._args: any): void {
     super.clean();
     this.deregisterEvents();
     this.removeCallback(MOUSE_ENTER_ID);

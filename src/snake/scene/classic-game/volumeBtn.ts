@@ -1,9 +1,8 @@
+import { AudioController, DIContainer } from "@octo/core";
 import { isPointInAlignedBBox } from "@octo/helpers";
-import { AudioController } from "core/audio-controller";
-import { DIContainer } from "core/di-container";
-import { GameObject } from "models/game-object";
+import { GameObject } from "@octo/models";
+import { withEvents } from "@octo/ui";
 import { SpriteImage } from "snake/models";
-import { withEvents } from "ui/with-events";
 
 const MOUSE_CLICK = "volumneBtnClick";
 
@@ -75,10 +74,13 @@ export class VolumneBtn extends withEvents(class extends GameObject {}) {
 
   private updateBBox() {
     this.bbox = {
-      nw: { x: this.position.x, y: this.position.y },
+      nw: {
+        x: this.position.x - this.width / 2,
+        y: this.position.y - this.height / 2,
+      },
       se: {
-        x: this.position.x + this.width,
-        y: this.position.y + this.height,
+        x: this.position.x + this.width / 2,
+        y: this.position.y + this.height / 2,
       },
     };
   }

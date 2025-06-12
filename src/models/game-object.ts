@@ -1,6 +1,7 @@
 import { Vec2 } from "./vec";
 import { BoundingBox } from "./bbox";
-import { GameCycle, GraphicContext } from "./game-cycle";
+import { GameCycle } from "./game-cycle";
+import { GraphicContext } from "./graphic-context";
 
 export abstract class GameObject<T = GraphicContext> implements GameCycle {
   id?: string;
@@ -18,10 +19,10 @@ export abstract class GameObject<T = GraphicContext> implements GameCycle {
     this.ctx = ctx;
   }
 
-  init(...args: any) {}
-  update(deltaTime: number, ...args: any) {}
-  render(...args: any) {}
-  clean(...args: any) {}
+  init(..._args: any) {}
+  update(_deltaTime: number, ..._args: any) {}
+  render(..._args: any) {}
+  clean(..._args: any) {}
 
   setPosition(value: Vec2<number>): void {
     this.position = value;

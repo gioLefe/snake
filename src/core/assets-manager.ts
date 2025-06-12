@@ -1,15 +1,6 @@
-import { ImageAsset, SoundAsset, Tag } from "@octo/models";
-
-export type GameAsset = { id: string; path: string; type: "IMAGE" | "AUDIO" };
-
-export interface AssetsHandler {
-  assets: Map<string, ImageAsset | SoundAsset> | undefined;
-  add(assetRequests: GameAsset[]): Promise<void>[];
-  find<T extends ImageAsset | SoundAsset>(id: string): T | undefined;
-  delete(id: string): void;
-
-  addTag(id: string, tag: Tag): void;
-}
+import { ImageAsset, SoundAsset, Tag } from "../models/asset";
+import { AssetsHandler } from "./models/assets-handler";
+import { GameAsset } from "./models/game-asset";
 
 export class AssetsManager implements AssetsHandler {
   assets: Map<string, ImageAsset | SoundAsset> = new Map();
@@ -22,8 +13,7 @@ export class AssetsManager implements AssetsHandler {
 
   find<T>(id: string): T | undefined {
     if (this.assets.has(id) === false) {
-      console.warn(`cannot find asset ${id}`);
-      return;
+      throw new Error(`cannot find asset ${id}`);
     }
     return this.assets.get(id) as T;
   }
@@ -50,7 +40,7 @@ export class AssetsManager implements AssetsHandler {
       if (assetRequest.type === "AUDIO") {
         const request = new XMLHttpRequest();
         request.open("GET", assetRequest.path, true);
-        request.responseType = "arraybuffer";
+        request.responseType = "arraybuffer"; // generic raw binary data buffer -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
         request.onload = function () {
           assetManagerHandle.assets.set(assetRequest.id, {
             source: request.response,
@@ -61,7 +51,7 @@ export class AssetsManager implements AssetsHandler {
         request.send();
         return;
       }
-      
+
       obj = new Image();
       obj.onload = function () {
         assetManagerHandle.assets.set(assetRequest.id, {

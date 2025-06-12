@@ -50,11 +50,11 @@ export class GameOverScene implements CanvasScene2D {
     this.restartBtn?.init(this.canvas);
 
   }
-  update(deltaTime: number, ...args: any) {
+  update(deltaTime: number, ..._args: any) {
     this.gameOverLabel?.update(deltaTime);
     this.restartBtn?.update(deltaTime);
   }
-  render(...args: any) {
+  render(..._args: any) {
     // Apply background color
     this.ctx.fillStyle = "rgba(226, 128, 24, 0.5)";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -63,7 +63,7 @@ export class GameOverScene implements CanvasScene2D {
     this.gameOverLabel?.render();
     this.restartBtn?.render();
   }
-  clean(...args: any) {
+  clean(..._args: any) {
     this.gameOverLabel?.clean();
     this.restartBtn?.clean();
   }

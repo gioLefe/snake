@@ -23,12 +23,12 @@ export class SpritePolygon implements Sprite {
     this.polygon = rotatePolygon(this.polygon, radiants);
   }
 
-  init(...args: any) {}
-  update(deltaTime: number, ...args: any) {}
+  init(..._args: any) {}
+  update(_deltaTime: number, ..._args: any) {}
   render(position: Vec2<number>) {
     renderPolygon(this.polygon, this.ctx, { worldCoordinates: position });
   }
-  clean(...args: any) {}
+  clean(..._args: any) {}
 
   getDistanceFromCenterToSide(): number {
     return this.getSideLength();

@@ -1,4 +1,4 @@
-import { MinMax } from "@octo/models";
+import { MinMax } from "../models/min-max";
 import { Vec2 } from "../models/vec";
 
 export function getVectorPerpendicular(
@@ -40,11 +40,11 @@ export function diffVectors(vec1: Vec2<number>, vec2: Vec2<number>): number {
 export function createVector(
   direction: number,
   distance: number,
-  origin?: Vec2<number>,
+  origin: Vec2<number> = { x: 0, y: 0 },
 ): Vec2<number> {
   return {
-    x: Math.cos(direction) * distance + (origin?.x ?? 0),
-    y: Math.sin(direction) * distance + (origin?.y ?? 0),
+    x: Math.cos(direction) * distance + origin.x,
+    y: Math.sin(direction) * distance + origin.y,
   };
 }
 
@@ -124,7 +124,7 @@ export function angleBetween(
   return angle;
 }
 
-export function randomIntFromInterval(min: number, max: number) {
+export function randomIntFromInterval(min: number, max: number): number {
   // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min);
 }

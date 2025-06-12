@@ -1,37 +1,34 @@
 import {
-  AssetsHandler,
   AudioController,
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
   DIContainer,
   SceneHandler,
   Settings,
-} from "@octo/core";
+} from "../../../core";
+import { AssetsHandler } from "../../../core/models/assets-handler";
 import {
-  checkSATCollision,
   createVector,
   randomIntFromInterval,
-} from "@octo/helpers";
+  satCollision,
+} from "../../../helpers";
 import {
   ASSETS_MANAGER_DI,
   CanvasScene2D,
   MinMax,
   SCENE_MANAGER_DI,
   Vec2,
-} from "@octo/models";
-import { withEvents } from "@octo/ui";
-import { Cookie, Pickup, Snake } from "../../models";
+} from "../../../models";
+import { withEvents } from "../../../ui";
+import { Cookie, Pickup, Snake, SpriteImage } from "../../models";
 import { GAME_OVER_SCENE_ID } from "../game-over/game-over.scene";
 import { CLASSIC_GAME_ASSETS, initSnake } from "./classic-game-init.scene";
 import { VolumneBtn } from "./volumeBtn";
 
 export const CLASSIC_GAME_SCENE_ID = "classic-game";
-const CANVAS_BG_COLOR = "#afd7db";
 const MOUSE_MOVE_EVENT_ID = "ClassicGameScene-mousemove";
 const KEY_DOWN_EVENT_ID = "ClassicGameScene-keydown";
 const KEY_UP_EVENT_ID = "ClassicGameScene-keyup";
 
-const FOOD_SIZE = 64;
+const FOOD_SIZE = 32;
 
 export class ClassicGameScene
   extends withEvents(class {})
@@ -56,6 +53,8 @@ export class ClassicGameScene
   pickups: Pickup[] = [];
   initialWorldCoordinates: Vec2<number> | undefined;
   sceneReady: boolean = false;
+  backgroundTiles: SpriteImage[] = [];
+  backgroundTilesOrder: number[][] = [];
 
   // Stats
   score = 0;
@@ -131,10 +130,21 @@ export class ClassicGameScene
           "speaker-mute",
           32,
           32,
-          10,
+          35,
           40,
         );
         this.volumeBtn.init(this.canvas);
+
+        this.backgroundTiles.push(
+          new SpriteImage(this.ctx, "bg-tile-1", 256, 256),
+        );
+        this.backgroundTiles.push(
+          new SpriteImage(this.ctx, "bg-tile-2", 256, 256),
+        );
+        this.backgroundTiles.push(
+          new SpriteImage(this.ctx, "bg-tile-3", 256, 256),
+        );
+
         this.sceneReady = true;
       },
     );
@@ -150,22 +160,18 @@ export class ClassicGameScene
     }
 
     // Collision detection
-    const headSideLength = this.playerSnake.getHeadSideLength();
-    const headDistanceDelta: Vec2<number> = createVector(
-      this.playerSnake.getDirection(),
-      this.playerSnake.getSpeed(),
-    );
-    const headPosition = this.playerSnake.getHeadPosition();
-
-    const snakeNextPos = {
-      x: headPosition.x + headDistanceDelta.x * deltaTime,
-      y: headPosition.y + headDistanceDelta.y * deltaTime,
-    };
 
     // - Snake colliding with itself
     if (this.collidesWithItself()) {
       this.playerLose();
     }
+
+    const headSideLength = this.playerSnake.getHeadSideLength() ?? 0;
+    const headDistanceDelta: Vec2<number> = createVector(
+      this.playerSnake.getDirection(),
+      this.playerSnake.getSpeed(),
+    );
+    const headPosition = this.playerSnake.getHeadPosition();
 
     // - Snake colliding with screen borders
     if (
@@ -179,19 +185,17 @@ export class ClassicGameScene
     }
 
     // Spawn cookies
-    while (this.pickups.length < 5) {
-      const w = this.settingsManager.get<number>(CANVAS_WIDTH);
-      const h = this.settingsManager.get<number>(CANVAS_HEIGHT);
+    while (this.pickups.length < 100) {
       const cookie = new Cookie(
         this.ctx,
         "cookie",
         FOOD_SIZE + 12,
         FOOD_SIZE,
         this.calcRandomPosition(
-          w ?? 1024,
-          h ?? 768,
-          { min: FOOD_SIZE, max: FOOD_SIZE },
-          { min: FOOD_SIZE, max: FOOD_SIZE },
+          this.canvas.width ?? 1024,
+          this.canvas.height ?? 768,
+          { min: FOOD_SIZE / 2, max: FOOD_SIZE / 2 },
+          { min: FOOD_SIZE / 2, max: FOOD_SIZE / 2 },
         ),
       );
       this.pickups.push(cookie);
@@ -199,6 +203,10 @@ export class ClassicGameScene
     }
 
     // - Food
+    const snakeNextPos = {
+      x: headPosition.x + headDistanceDelta.x * deltaTime,
+      y: headPosition.y + headDistanceDelta.y * deltaTime,
+    };
     this.pickups.forEach((pickup, i) => {
       const pickupPos = pickup.getPosition();
       if (pickupPos === undefined) {
@@ -227,14 +235,12 @@ export class ClassicGameScene
   }
 
   render(): void {
-    // Apply background color
-    this.ctx.fillStyle = CANVAS_BG_COLOR;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.applyBackground(this.canvas.width, this.canvas.height, 256, 256);
 
     // Render food
     this.pickups.forEach((p) => p.render());
 
-    // TODO: Reender Powerups
+    // Render Powerups, others...
 
     // Player snake
     this.playerSnake?.render(this.ctx);
@@ -246,7 +252,7 @@ export class ClassicGameScene
     this.ctx.strokeText("Score: " + this.score, 10, 20);
   }
 
-  clean(...args: any) {
+  clean(..._args: any) {
     this.sceneReady = false;
     this.removeCallback(KEY_DOWN_EVENT_ID);
     this.removeCallback(KEY_UP_EVENT_ID);
@@ -262,7 +268,7 @@ export class ClassicGameScene
 
   private mouseMove = (ev: MouseEvent) => {
     return (snake: Snake) => {
-      snake.steerTo({ x: ev.offsetX, y: ev.offsetY });
+      snake.assignDestinationPoint({ x: ev.offsetX, y: ev.offsetY });
     };
   };
 
@@ -299,14 +305,8 @@ export class ClassicGameScene
     minMaxH: MinMax,
   ): Vec2<number> {
     return {
-      x: randomIntFromInterval(
-        minMaxW.min / 2,
-        Math.random() * (containerW - minMaxW.max / 2),
-      ),
-      y: randomIntFromInterval(
-        minMaxH.min / 2,
-        Math.random() * (containerH - minMaxH.max / 2),
-      ),
+      x: randomIntFromInterval(minMaxW.min, containerW - minMaxW.max),
+      y: randomIntFromInterval(minMaxH.min, containerH - minMaxH.max),
     };
   }
 
@@ -327,10 +327,7 @@ export class ClassicGameScene
     // Snake colliding with itself ( give for granted is impossible head collides with the first 3 polygons)
     for (let i = 4; i < length; i++) {
       if (
-        checkSATCollision(
-          headSegment.getBBoxPolygon(),
-          segments[i].getBBoxPolygon(),
-        )
+        satCollision(headSegment.getBBoxPolygon(), segments[i].getBBoxPolygon())
       ) {
         return true;
       }
@@ -347,5 +344,46 @@ export class ClassicGameScene
     // TODO Disable current scene events before changing to game_over
 
     this.sceneManager.changeScene(GAME_OVER_SCENE_ID, false);
+  }
+
+  private applyBackground(
+    canvasWidth: number,
+    canvasHeight: number,
+    bgWidth: number,
+    bgHeight: number,
+  ) {
+    // Apply background color
+    // this.ctx.fillStyle = CANVAS_BG_COLOR;
+    // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.ctx.moveTo(0, 0);
+
+    const columnCount: number = Math.ceil(canvasWidth / bgWidth);
+    const rowCount: number = Math.ceil(canvasHeight / bgHeight);
+
+    if (this.backgroundTilesOrder.length === 0) {
+      for (let i = 0; i < rowCount; i++) {
+        const rowTiles = [];
+        for (let j = 0; j < columnCount; j++) {
+          rowTiles.push(Math.floor(Math.random() * 3));
+        }
+        this.backgroundTilesOrder.push(rowTiles);
+      }
+    }
+
+    let col = 0;
+    let row = 0;
+    for (let yPos = 0; yPos < canvasHeight; yPos = yPos + bgHeight) {
+      col = 0;
+      for (let xPos = 0; xPos < canvasWidth; xPos = xPos + bgWidth) {
+        this.backgroundTiles[this.backgroundTilesOrder[row][col]].render(
+          { x: xPos, y: yPos },
+          0,
+          0,
+        );
+        col++;
+      }
+      row++;
+    }
   }
 }

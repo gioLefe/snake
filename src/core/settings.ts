@@ -3,6 +3,7 @@ export const CANVAS_HEIGHT = "canvasH";
 
 export class Settings {
   static SETTINGS_DI = "settings";
+  
   private settings = new Map<string, unknown>();
 
   get<T extends unknown>(key: string): T | undefined {

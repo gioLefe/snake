@@ -1,7 +1,8 @@
-import { getVectorPerpendicular, WorldPolygon } from "@octo/helpers";
+import { BoundingBox } from "../models";
 import { Polygon } from "../models/polygon";
 import { Vec2 } from "../models/vec";
-import { BoundingBox } from "@octo/models";
+import { getVectorPerpendicular } from "./math";
+import { WorldPolygon } from "./sat-collision";
 
 export interface RenderingPolygonParams
   extends Partial<CanvasFillStrokeStyles> {

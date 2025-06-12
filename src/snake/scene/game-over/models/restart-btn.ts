@@ -10,7 +10,7 @@ const MOUSE_CLICK = "restartBtnClick";
 export class RestartBtn extends UIClickableLabel {
   override init(
     canvas: HTMLCanvasElement,
-    ...args: any
+    ..._args: any
   ): void {
     super.init(canvas);
     this.addCallback(
@@ -23,7 +23,7 @@ export class RestartBtn extends UIClickableLabel {
     this.enableEvent("click")(canvas);
   }
 
-  override clean(...args: any): void {
+  override clean(..._args: any): void {
     super.clean();
     this.removeCallback(MOUSE_CLICK);
     this.deregisterEvents()
